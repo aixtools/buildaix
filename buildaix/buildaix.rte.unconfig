@@ -1,0 +1,5 @@
+#!/usr/bin/ksh
+for file in bzlib.h zconf.h zlib.h; do
+lslpp -w /usr/include/$file > /dev/null
+[[ ! -z $? ]] && rm -f /usr/include/$file
+done

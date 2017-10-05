@@ -1,0 +1,262 @@
+$Id: CHANGELOG 266 2017-10-05 09:39:35Z michael $
+buildaix 2.0.18.0: 2017-10-05
+ * add mkXany (and cplib.ksh) to automate making dual (32- and 64-bit) packages
+ * work on mkinstallp.ksh - to support more of what makebff.pl can handle (e.g., .cfgfiles)
+ ** note: requires a second call to makebff.pl when 'special' stuff is needed.
+ ** what is 'special' may depend on AIX level (AIX 6+ mkinstallp does more that AIX5)
+ * This includes moving some core around - hopefully to improve legibility
+ * auto_merge and hold_new fail at post_i processing, better before .config processing
+ * because the .inventory processing fails (mkinstallp makes a default .inventory)
+ * * user_merge is less pretty because it gives a lengthy message at the end.
+ * * other: works - in that it gets the MIGSAVE directory defined and copies an original
+ * * file, but - it may be simplier to write a ._pre_i and .unpre_i to copy files
+ * * to $TMPDIR - so that, during successful install/upgrade .config can use the
+ * * files in $TMPDIR
+
+buildaix 2.0.17.0: 2017-09-21
+ * added config and unconfig scripts to copy/remove include files stored in 
+   /opt/buildaix/include (e.g., zlib.h et al) to /usr/include
+
+buildaix 2.0.16.0: 2017-09-08
+ * added an extra character that cannot (easily) be in filename in the inventory
+
+buildaix 2.0.15.0: 2017-06-15
+ * fixed an error when using -V and -D - the copy was correct,
+   but it could not find the .bff file generated
+ * added a flag to number "b" beta packages automatically
+   creating a new FIX number based on number after the 'b'
+
+buildaix 2.0.14.0: 2017-02-08
+ * fixed bug with vrmf not properly reset when zero length
+
+buildaix 2.0.13.0: 2017-02-08
+ * fix - add .config, .pre_i, etc. for other sections!
+ * edited CHANGELOG - to shorten long description lines
+ * fix bug - when aixtools.zlib was installed bzlib.h was not found.
+   Check for all alturnates provided by /opt/buildaix/include
+ * add support for supercedes config file - that makebff.pl supports,
+   but /usr/sbin/mkinstallp does not
+
+buildaix 2.0.12.0: 2016-11-02
+ * fix -D output so that it can be piped into ksh for execution
+ * use full pathname for grep and egrep to prevent syntax issues when GNU grep
+   is also installed
+ * fix aixinfo so that "prj" is never a PRODUCT name
+ * personal change for me - when subdir is prj - ignore it - asif == "aixtools"
+ * change default machine to pwr5 for xlc
+ * default -O setting is now -O3 - will add flag tbd to see optimize level
+ * have seperate special CFLAGS by compiler, rather than only xlc
+   (that breaks gcc)
+
+buildaix 2.0.11.0: 2016-08-24
+ * removed remaining comments for the aborted 64-bit packaging
+   - finishing the purge of version 2.0.8.0
+ * add a call to ./buildaix/bin/prep_install.ksh, if exists,
+   for project processing before mkinstallp packaging begins
+ * add -qarch=pwr4 and -qmaxmem=-1 to CFLAGS (assumes xlc as compiler!)
+ * fixed bug with -p OPTARG processing
+ * changed -e to not depend on ${prefix},
+   i.e., not always be a subdir of ${prefix}
+ * Modify Fileset Description: to always include ${PRODUCT} ${FILESET}
+ * make sure opt/lib/charset.alias has a unique name,
+   TBD .post_i processing to set symbolic link
+
+buildaix 2.0.10.1: 2016-06-06
+ * make sure .I files are world-readable regadless of umask setting
+ * restore a lost addition - namely to add a requisites line such as:
+   ">0 { *prereq idsldap.clt32bit62.rte 6.2.0.0 *prereq idsldap.clt32bit63.rte 6.3.0.0 }"
+   i.e., to add a group requisite specification of needing one or more
+   of a group, e.g., >0 is at least 1 of { ... }
+
+buildaix 2.0.10.0: 2016-05-24
+ * corrected a typo in buildaix.ksh - so TARGETDIR is provided everywhere
+   in option -D output
+ * improved interaction between buildaix and mkinstallp when using buildaix -D
+
+buildaix 2.0.9.0: 2016-04-11
+ * corrected a bug where the TARGETDIR was not getting updated soon enough
+   (-V argument processing)
+
+buildaix 2.0.8.0: starting 2016-03-04
+ * remove 64-bit 'mangling' of the filesets packaging - want autotools
+   to modify dirnames, not buildaix scripts
+
+buildaix 2.0.7.0: starting 2016-03-02
+ * add ' ' (space) as character to catch (buildaix:filename_cleanup())
+ * use ':' to seperate old:new name fo file (for later function to move
+   files to original name)
+ * TODO : put moved in lpp:root component as a file
+ * remove ${AIXVER} from .I filename - might be needed in special cases!
+   but off for now
+
+buildaix 2.0.6.0: starting 2016-02-04
+ * default uid:gid is bin:bin rather than root:system
+ * finish initial proposal for argument -D|c prepare a proposal for packaging
+   a directory
+
+buildaix 2.0.5.0: 2016-01-19
+ * look in ../src/${dirname} to make use of autotools ability to seperate
+   source and build directories
+ * make the .rte comment more human readable - was cryptic builddate numbers
+ * change universale pages to universal files for .share description
+
+buildaix 2.0.4.0: 2015-11-06
+ * correct type where the requisites file got wiped with application
+   specifics (mkinstallp.ksh)
+ * initial support for discovery of and modifications for 64-bit support
+   (not finished yet)
+ ** aixinfo and buildaix.ksh
+ * added bzlib.h (for libbz2 v1.05 default AIX supported version)
+
+buildaix 2.0.3.1: 2015-10-07
+ * remove the files in /tmp I had been leaving around for debug info
+ * corrected error in cleanup function, reduced debug messages
+ * make sure requisites file is truncated
+
+buildaix 2.0.3: 2015-08-07
+ * updated copyright date in base scripts
+ * added #!/usr/bin/ksh to aixinfo (bash ddoes not know print as well as ksh does)
+ * patched some code setting *coreq and *instreq flags, not done - but better
+
+buildaix 2.0.2: 2015-06-23
+ * changed the options -I and -i to -B and -T
+   (custom bin/scripts and templates for package)
+ * add parsing of buildaix/requisites for additional prereq filesets
+ * add -I/opt/buildaix/include to CPPFLAGS when adding it to CFLAGS
+ * make sure buildaix/root is created when installing templates
+ * moved default --mandir setting to back to /usr/share/man
+ * changing some DIR labels for better self-documentation
+ * experiment starting to 'copy' and install a directory,
+ ** still establishing additional required arguments
+ * modified comparision of PRODUCT and FILESET in aixinfo and mkinstallp.ksh
+   changes lpp string when either $PRODUCT==$PROGRAM || $PRODUCT==$FILESET
+ * moved test for bos.adt.insttools to mkinstallp.ksh (from buildaix.ksh)
+ * added processing for requisites (stanzas specified in buildaix/requisites)
+ * fixed bug so that flags such as -V are processed properly
+ * restored man pages extension to include default language - so .man becomes
+   .man.en_US again
+ * add *instreq for man pages to keep superflous installation of man pages
+   from occuring
+ * set man pages to bin:bin and mode 444 (r--r--r--)
+
+buildaix 2.0.1: 2015-03-26
+ * new version-release-MAINTENANCE now that the trunk is restored in svn
+ * new start - first fix is move /opt/aixtools/include to /opt/buildaix/include
+ * add processing for openssh portable numbering 6.8p1 becomes 6.8.0.1601
+   (aixinfo)
+ * add templates for pre, post anc config of filesets. (buildaix)
+
+buildaix 2.0.0: new version started 2015-03.26
+ - merging everything back into trunk - where it belongs
+
+buildaix 1.1.0: new version started 2015-03-06
+ ** on March 6, this was copied to a branch, and checked-out from the branch,
+   which was not the intent.
+ ** version 2.0 as new HEAD on truck restored normal svm
+   source-code maintainence
+ * new version because will be using new lppname scheme
+   e.g, aixtools.gnu.fileset; aixtools.utils.fileset
+ * build/aix/* is depreciated
+ * .buildaix/* for things that are temporary
+ * buildaix/.info for template generated
+ * buildaix/.stdout for redirected output
+ * buildaix/info for license agreements, copyright, readme
+ * buildaix/bin for overrides
+ * buildaix/liblpp for things to include in liblpp.a
+ * installp/ppc is made only after a (first) successful mkinstallp.ksh
+ * mkbuildaix to create template files for
+   buildaix/bin, buildaix/liblpp buildaix/info
+ * NEW DIRECTORY structure in DESTDIR
+ ** PRODUCT/PACKAGE/FILESET/V.R.M.F
+
+buildaix 1.0.11: -- never released 06 March 2015
+ * add/test that buildaix works with gcc
+ * add option -U that will export FORCE_UNSAFE_CONFIGURE=1
+
+buildaix 1.0.10: 9 Nov 2014 (r 72)
+ * fixed svn fileproperties
+ * changed layout of installp timestamp to YYWW MMDD HHMM
+   - year/week month/day hour/min
+ * base LIBCVRNL on baselevel including al TL number rather than without
+ * add ${AIXVERV}, e.g. aix537 to installp filename in installp/ppc
+   this value is based on LIBCVRNL
+ * added syntax (-h), changed option names as I add getopts processing
+ * add special handleing for coreutils command [
+ ** implied TODO is code to create/add to a .post_i/.post_u
+   handling of special files so renamed.
+
+buildaix 1.0.9: 13 June 2014
+ * add TODO to keep track of ideas
+ * add parameter to modify packaging path to /opt/project/(s)bin;
+ ** would like lib and include to still be on /opt
+
+buildaix 1.0.8: 20 January 2014 - forgot to note changes, sigh
+
+buildaix 1.0.7.0:
+  * make sure ./build/aix/aixinfo is called if it exists,
+   rather than /opt/bin/aixinfo
+  * rename variables VERSION and RELEASE to VRM and FIX
+   - to be closer to installp concept VRMF
+  * add better awk script in aixinfo to parse over '-' characters
+   in PROJECT NAME
+  * add bos.rte.libc of compiling AIX (e.g., bos;rte.libc.5.3.0.0)
+   to prevent loading backwards
+
+buildaix 1.0.6.0: 29 October 2013
+  * buildaix: add  --infodir=/opt/share/info/${NAME} because all projects
+   were creating a file! named /opt/share/info/dir
+  * make.ksh: make sure .svn directories are not copied into fileset
+
+buildaix 1.0.5.0: 29 October 2013
+  * aixinfo: remove CFLAGS from aixinfo - now ONLY in buildaix script
+  * mkinstallp.ksh: sed away more "bothersome" characters in filenames
+   (that will break installp parsing)
+  * buildaix: add literal double-quote in config command echoed
+   (for easy copy/paste)
+  * buildaix: on ./configure error - less verbose output
+   - give suggestions instead
+  * buildaix: check for gmake, elif /opt/bin/make, else use make
+  * buildaix: restore halts on error for make, better message
+   for make install halt
+
+buildaix 1.0.4.0: 30 September 2013
+  * added zlib.h and zconf.h in /opt/aixtools/include from zlib-1.2.8
+  * if zlib.h is not in /usr/local or /usr add /opt/aixtools/include to CFLAGS
+    hopefully this will resolve common ./configure (autoconf) issues from when
+    only /usr/include and /usr/local/include are searched for zlib.h
+
+buildaix 1.0.3.0: 17 September 2013
+  * AIX mkinstallp should have my patch in official release now
+  * added check to verify the the files directory exists before creating template
+  * may be other changes I forgot to document :sadface:
+
+buildaix 1.0.2.3: 10 January 2013
+  * add INSTALL_ROOT for PHP before startign make install
+  * add CPPFLAGS for /opt/include for configures (buildconf)
+    versions that fail to find it
+  * correct error with passing additional argument to configure
+  * add/correct test for gmake
+  * added manual patch to /usr/sbin/mkinstallp so that symbolic links
+    can be included in packages
+
+buildaix 1.0.2.2: 23 September 2012
+  * modified description to contain timestamp
+  * renamed /opt/bin/aixinfo.ksh to /opt/bin/aixinfo to be consistent
+    with projects
+  * use project version of aixinfo rather than generic, when defined
+  * exec project version - build/aix/buildaix.ksh, when available
+  * started documentation for buildaix (simple man page for buildaix)
+  * patched AIX mkinstallp to make symbolic links from root possible
+    - this will also allow adding language files copyright messages, etc..
+
+buildaix 1.0.2: 4 Spetember 2012
+  * accept project names with four digits in directory name,
+    e.g. gettext-0.18.1.1
+  * move /etc/ as sysconfdir to /var/$NAME/etc
+  * put /opt/share/* in seperate fileset
+
+buildaix 1.0.1:	2 September 2012
+  * update buildaix so that it can package itself (internal function)
+  * add argument for modifying configure command
+
+buildaix 1.0.0: March 2012

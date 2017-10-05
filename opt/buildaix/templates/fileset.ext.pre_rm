@@ -1,0 +1,14 @@
+#!/usr/bin/ksh
+# $Id: fileset.ext.pre_rm 264 2017-10-05 09:12:05Z michael $
+#   Runs during a fileset installation prior to removing the files from
+#   a currently installed version of the fileset.
+#   This is not run for installp -u -- it is run when a new version is installed
+#   without previously removing an old version.
+
+# on success exit with 0 status, non-zero will abort the install (-u) process
+[[ ! -z ${VERBOSE} ]] && \
+	print -- "+- `pwd` - $0 -+"
+# The line below is as wide as the lines printed during normal installp installs
+# it is provided as a reference
+# print -- "+-----------------------------------------------------------------------------+"
+exit 0

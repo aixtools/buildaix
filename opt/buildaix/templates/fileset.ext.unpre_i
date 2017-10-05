@@ -1,0 +1,22 @@
+#!/usr/bin/ksh
+# $Id: fileset.ext.unpre_i 264 2017-10-05 09:12:05Z michael $
+# main purpose of this script is to undo anything it might have done
+# in a pre_i/pre_u script. Ideally, it has not done anything.
+
+# as in the other un* files, if unconfig_d exists this will not be used
+# during installp -u operations
+# so the focus should be on verifying that the system is 'clean'
+
+# If the system is not clean - MAYBE - installp should stop and not uninstall
+# other things.
+
+# This is the moment to files saved before a failed install or a normal
+  uninstall started.
+
+# on success exit with 0 status, non-zero will abort the install process
+[[ ! -z ${VERBOSE} ]] && \
+	print -- "+- `pwd` - $0 -+"
+# The line below is as wide as the lines printed during normal installp installs
+# it is provided as a reference
+# print -- "+-----------------------------------------------------------------------------+"
+exit 0

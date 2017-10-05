@@ -1,0 +1,21 @@
+#!/usr/bin/ksh
+# $Id: fileset.ext.unconfig 264 2017-10-05 09:12:05Z michael $
+# This is the first script that is run prior removing any files of an application
+# It may also run after a failed .config!
+# This script runs at:
+# 1. installp - installation failed after/during config
+# 2. installp - config_u failed during an update
+# 3. installp -u (when unconfig_d does not exist which is most common)
+
+# Think in terms of application tasks that need to happen - successfully!
+# before the system actually starts removing files. If the unconfig fails
+# AIX is not going to remove anything. Everything you need - in application terms
+# should still be available. i.e., nothing has been removed from the .al files.
+
+# on success exit with 0 status, non-zero will abort the install process
+[[ ! -z ${VERBOSE} ]] && \
+	print -- "+- `pwd` - $0 -+"
+# The line below is as wide as the lines printed during normal installp installs
+# it is provided as a reference
+# print -- "+-----------------------------------------------------------------------------+"
+exit 0

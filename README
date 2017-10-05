@@ -1,0 +1,103 @@
+#   Copyright 2012-2016 -- Michael Felt
+#
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+
+This package automates the building of standard OSF projects into installp
+formated files.  On completion the installable fileset is placed in
+${BASE}/installp/ppc.
+As reference - The template created is stored in ${BASE}/buildaix/ while
+temporary files are stored in ${BASE}/.buildaix/
+Note: 'make clean' and make 'distclean' are not buildaix aware
+and shall not remove these directories. You may remove .buildaix/ at any
+time, but be cautious about ./buildaix - there may be additional customization.
+
+SYNTAX buildaix
+buildaix flags WITH options
+-) add to configure arguments
+P) define LPP, export lpp=${LPP} i.e., ipv lpp=$PRODUCT.$PACKAGE
+F) define FSET
+V) define VRMF, export vrmf=${VRMF}
+D) copy proposal (need to copy/paste)
+p) prefix
+e) eprefix
+
+buildaix flags WITHOUT options
+h) help
+f) force mode, -e Makefile && make -i distclean, rm -f Makefile config.*
+E) eprefix=$prefix/${PRODUCT}/${FILESET}
+U) define FORCE_UNSAFE_CONFIGURE=1
+B) copy buildaix scripts for customization
+T) copy template scripts for customization
+
+* see man buildaix for more details
+
+CONFIGURE and MAKE
+If the default ./configure command in buildaix does not succeed
+run ./configure manually until you have a successful configure run.
+Then execute buildaix as the presence of a Makefile in the project root
+will cause the script to skip calling configure
+
+MAKE DESTDIR=${TEMPDIR} install
+After make has completed, "make DESTDIR=${TEMPDIR} install" is called
+to install the package in a scratch area rather than on the development
+system.
+If this fails, our recommendation is to use the GNU coreutils install
+command. Adjust your PATH variable to be sure it is seen.
+
+MKINSTALLP
+The mkinstallp.ksh script works from the following assumptions:
+NOTE: any files/directories in ${TEMPDIR}/usr/local are removed
+my mkinstallp.ksh
+
+These files are located in the USR part of the installp packaging
+
+/etc is used for configuration - although /var/PROJECT/etc is preffered
+/var is used for modifiable data
+
+both /etc and /var are considered to be the ROOT part of the fileset
+
+/opt, /var, /etc, /usr form the PKG.PROGRAM.rte (runtime environment) fileset
+except /usr/share/man is put into a seperate fileset package
+- aixtools.SOMETHING.man.en_US by default.
+
+PATCHES that might be needed! (old versions of AIX!!)
+I have had issues with assigning symbolic links in the packages - default mkinstallp
+does not like these and exits with an error. Use following patch to "fix it"
+
+Note: before applying the patch you may want/need to remove /usr/sbin/mkinstallp from
+/etc/security/tsd/tsd.dat using
+# trustchk -d /usr/sbin/mkinstallp
+
+because the checksum will no longer be correct. I also needed to change the file mode
+before applying the patch
+# chmod u+w /usr/sbin/mkinstallp
+
+
+--- /usr/sbin/mkinstallp	2010-06-10 01:04:37.000000000 +0200
++++ ../mkinstallp	2012-09-24 12:34:17.000000000 +0200
+@@ -2350,12 +2350,13 @@
+        fi
+        
+        # Make sure we have a valid file
+-       if [[ ! -e $ROOT_DIR/${FILE_LINE#[ ]*} ]]; then
++       # or symbolic link -- note -- this is a quick hack for existence of the link, not what it points at!
++       if [[ ! -e $ROOT_DIR/${FILE_LINE#[ ]*} && ! -L $ROOT_DIR/${FILE_LINE#[ ]*} ]]; then
+          MESG=`/usr/bin/dspmsg -s 20 cmdinstl_e.cat 87 "0503-881 %s: Invalid filename (%s)\n \
+  \tin %s\n" "$CMDNAME" "${FILE_LINE#[ ]*}" "$TEMPLATE_FILE"` 
+          print >&2 "$MESG"
+          exit 1;
+-       fi      
++       fi
+  
+        # Write out the al file, stripping leading spaces if they appear. Note
+        #  that the file paths are relative, so prepend a dot to the filename.

@@ -1,0 +1,121 @@
+# $Id: README.templates 264 2017-10-05 09:12:05Z michael $
+README:
+This file. You can use 'grep -p name README' to get the paragraph
+for a particular file.
+
+bin:
+	directory for replacement. i.e., modified buildaix scripts.
+	This can be Initialized by using 'buildaix -I'
+
+The following directories are empty by default. You can add files with the name
+${FILESET}.${extension}. The command 'aixinfo' determines the FILESET value from
+the BASE directory (the directory you call buildaix utilities from) name - OR -
+you can set it manually as an exported environment variable. (Same as for
+PRODUCT - buildaix by default - as PROGRAM - which is based on the directory
+name of $BASE/.. or $BASE/../.. when when dirname of `pwd` and `(cd ..; pwd)`
+are the same.
+
+cfgfiles:
+	The files listed in this file, line by line, are saved in advance of
+	any install in order to allow a migration to a new version of a
+	fileset.  A line that looks like:
+/a/fullpath/filename keyword
+	so, before the installation of the new files begins, these files are
+	saved, and depending on the value, are restored or left for other
+	processing.
+./full/path/name keyword
+preserve	restore current
+auto_merge	post_i does processing
+hold_new	new is current, old is saved for reject
+user_merge	leaves new, keeps old in config save directory
+Other		like user_merge, meaning depends on application
+
+The following directories are scripts that are to be run in a particular during
+an installp process. During install config is run last, during uninstall
+unconfig is run first (or perhaps pre_rm, need to recheck documentation)
+
+pre_i:
+	The intent of this file is to verify that prequisites are met before
+	any changes are made to the system.
+	This script is run before any files are actually installed in their
+	destinations. (These scripts are 'installed' to ${INUTEMPDIR}).
+	If it exists, and exits with result 0 the next action is installing
+	the files in the ${FILESET}.${extension}.
+	Typical checks:
+	If your application wants accounts, etc, to exist BEFORE the applicaton
+	is installed you can have your script give a message and abort here.
+	Other typical checks: a particular fileset version, or a specific file,
+	or a filesystem - that needs to already exist.
+	ALSO useful - save existing files to $TMPDIR before the new files
+	are installed - overwriting the existing ones.
+	The focus is to verify prequisites have been met, not to 'fix' the system.
+	For example, a userid exists in LDAP, but not in files registery.
+	A conservative approach would be to to stop the installation because the
+	userid exists - but not local to the system. Or the userid exists
+	in both LDAP and files, but they have different uid/gid defaults.
+	Abort and let the system admins create the local id in files
+	(with the same UID).
+
+post_i:
+	This script is directly after files are actually installed in their
+	destinations.
+	The intent of this file is to do any post processing needed before
+	application configuration begins.
+	The original model assumes that .cfgfiles processing is handled here.
+	HOWEVER, as restoring a file may make it no longer meet a .inventory
+	requirement - and processing breaks off.
+	In general - you will skip .post_i and focus on .config instead.
+	IMHO: here, or in config is where creation of default user accounts
+	should begin. And/or chown of files in the fileset.al is they need
+	to be owned by a specific user/group id that is expected to be unique
+	to every system.
+	IMHO: the changes made here are from a system perspective (and config
+	is application perspective). Here you could have the option
+	to create default system accounts (-R files) to own the files
+	and apply the ${FILESET}.al file to chown files as needed.
+	If it exists, and exits with result 0 the config(_u) script is run.
+	NOTE: as this script runs before inventory verification - if there is
+	textual uid/gid dependency in the .inventory - now is the time to chown
+	and chgrp files - as needed.
+
+config:
+	This is a script that is run after post_i AND after the fileset inventory
+	verification has completed successfully. For an update it is called
+	config_u, otherwise just config - unlike, e.g., pre and post.
+	When this script starts nearly everything that the system can do for you
+	has been done.
+	Now is the moment to do application related configuration
+	activities - with the idea that during an uninstall
+	a unconfig script will have the ability to undo this.
+	IMHO: again - do not make 'system' changes out - that are not
+	application tasks (e.g., configuring autostart is an application config,
+	while default default application id - may or may not be.
+	A typical example would be processing for adding an application
+	into SRC and/or into /etc/rc.d processing.
+
+pre_rm:
+	Runs during a fileset installation prior to removing the files from
+	a currently installed version of the fileset.
+	This is not run for installp -u -- it is run when a new version is installed
+	without previously removing an old version.
+	NOTE: it is not run when the fileset is not already installed at "any" version.
+
+The following are for uninstall and/or a failed install
+(depending on how far the install process is)
+
+unconfig:
+	This is the first step in a normal uninstall. If, for example, the application
+	cannot be stopped - this should report a non-zero status - and deinstal stops
+	before it really begins.
+
+unpost_i:
+	Undoes processing performed following restoring the files from the apply list
+	in the installation or update during a deinstall or a reject of a fileset
+
+unpre_i:
+	Undoes processing performed prior to restoring the files from the apply list in the installation
+	or update during a deinstall or a reject of a fileset.
+	At this point any files that are suppossed to be reomved from the system
+	should be removed. If the earlier scripts (either .pre_i during an install, or
+	.unconfig for an uninstall) 'saved' files to a ${SAVE} area can now be restored
+	to whereever you want them.

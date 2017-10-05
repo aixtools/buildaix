@@ -1,0 +1,30 @@
+#!/usr/bin/ksh
+# $Id: fileset.ext.unpost_i 264 2017-10-05 09:12:05Z michael $
+# script to perform any processing on the files in the .al list before
+# they actually get removed
+# the most common usage of this script is for a failed install
+# in the absence of unconfig_d it is also used before AIX actually starts
+# removing files (all files listed in the fileset.al (or ODM inventory is more likely)
+# just as post_i was the time for system additions to be made, this is the moment
+# to undo those actions (e.g., system level autostart)
+
+# Again inportant file will be the file
+# ${PRODUCT}.${PROGRAM}.${FILESET}.al
+# located in /usr/lpp/${PRODUCT}.${PROGRAM}/liblpp.a
+# or /usr/lpp/${PRODUCT}.${PROGRAM}/inst_root/liblpp.a
+
+# lppbase=/usr/lpp/${PRODUCT}.${PROGRAM}
+# applylist=${lppbase}/${PRODUCT}.${PROGRAM}.${FILESET}.al
+# or
+# applylist=${lppbase}/inst_root/${PRODUCT}.${PROGRAM}.${FILESET}.al
+# At this point the files in the ${applylist} are installed on the system.
+# Now anything you want to do at 'root' level to make system changes
+# is possible.
+
+# on success exit with 0 status, non-zero will abort the install process
+[[ ! -z ${VERBOSE} ]] && \
+	print -- "+- `pwd` - $0 -+"
+# The line below is as wide as the lines printed during normal installp installs
+# it is provided as a reference
+# print -- "+-----------------------------------------------------------------------------+"
+exit 0

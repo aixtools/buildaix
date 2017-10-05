@@ -1,0 +1,83 @@
+.TH BUILDAIX 1 "04 March 2016"
+.SH NAME
+Buildaix \- automate process of creating installp format software packages
+.SH SYNOPSIS
+.B buildaix
+[
+.I -h # help/syntax
+.I [-p prefix] [{-e eprefix | -E}] [-F fileset] [-P Program.Product]
+ [-f] [-U] [-V N.N.N.N] [-D directory] [additional flags for configure]
+.I {-B | -T}
+]
+.SH INTRODUCTION
+.B buildaix
+automates creation of installp packages from opensource packages that conform to GNU packaging guidelines.
+.TP
+\fB\-h\fR
+help syntax message
+.TP
+\fB\-p\fR \fBprefix\fR
+By default the \-\-prefix argument is: \-\-prefix=/opt. Use this argument to change \$prefix to something else.
+.TP
+\fB\-e\fR \fBeprefix\fR
+By default the \-\-exec\-prefix argument is same as $prefix. Use this argument to change it to something else.
+.TP
+\fB\-E\fR changes \-\-exec\-prefix argument to $prefix/$PROGRAM/$PRODUCT
+.B aixinfo
+is called to set $PROGRAM and $PRODUCT.
+.TP
+\fB\-P\fR \fBProduct.Packge\fR
+Specify the Product.Package part of the fileset being built. These will override aixinfo (but not effect -E)
+.TP
+\fB\-F\fR \fBFileset\fR
+Specify the Fileset part part of the fileset Product.Package.Fileset being built.
+This will override aixinfo
+.TP
+\fB\-V\fR \fBV.R.M.F\fR
+Specify the VRMF (Version Release Maintenance Fix) part of the fileset
+Product.Package.Fileset.$VRMF being built.
+Format is any combination between N.N.N.N to NN.NN.NNNN.NNNN - and all characters must be numbers (seperated by .).
+.TP
+\fB\-D\fR \fBDirectoryPath\fR
+Prepare a proposal of commands to copy and package \fBDirectoryPath\fR as an installp package.
+.TP
+\fB\-f\fR
+Force a run of ./configure.
+Will attempt a "make distclean" and then do a forced remove of \fIMakefile\fR and config.* files
+.TP
+\fB\-U\fR
+Force UNSAFE mode for projects needing this with
+	export FORCE_UNSAFE_CONFIGURE=1
+.br
+This is needed by some GNU projects.
+.TP
+\fB\-B\fR
+Copy buildaix scripts to $BASEDIR/buildaix/bin for further customization
+specific to this package. If no customization is needed, just remove the script
+from the directory.
+.TP
+\fB\-T\fR
+Copy liblpp script templates for (un)pre_i, (un)post_i and (un)config to  $BASEDIR/buildaix and $BASEDIR/buildaix/root
+.SH ENVIRONMENT VARIABLES
+The standard environment variables CC, CFLAGS, CPPFLAGS, LFLAGS affect the behavior of configure. When CC is not defined it defaults to xlc. Additionally, -O2 is added to CFLAGS.
+If zlib.h cannot be found in /opt/include, or /usr/include then /opt/buildaix/include is
+added to CFLAGS and CPPFLAGS
+.PP
+Not directly related to buildaix - the environment variable VERBOSE - when set to anything will cause the buildaix packages, if the template defaults are used - to
+print the script and working directory as the package is processed by installp
+.SH CAVEATS
+This program was written by the author to learn and provide an example
+on how to use the AIX mkinstallp command.
+.PP
+Note: you can write programs to override the default behavior by placing
+buildaix.ksh, aixinfo, and/or mkinstallp.ksh in $BASEDIR/buildaix/bin.
+See the option -T
+.PP
+/usr/bin/buildaix is a symbolic link to /opt/bin/buildaix.ksh
+
+.SH SEE ALSO
+aixinfo(1) (not ready yet)
+.SH AUTHOR
+Michael Felt
+.SH Copyright
+Copyright 2011-2016 by ROOTvg.net and AIXTOOLS.net

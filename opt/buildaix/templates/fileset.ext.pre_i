@@ -1,0 +1,29 @@
+#!/usr/bin/ksh
+# $Id: fileset.ext.pre_i 264 2017-10-05 09:12:05Z michael $
+# script to verify any prequistities before any files/directories are installed
+# typical checks are very specific fileset pre-quistites that may not be captured
+# easily in installp format (e.g., RPM prequisites)
+
+# or perhaps your later scripts (especially e.g., post processing need other programs
+# (e.g., perl and/or bash) - verify that is installed before making
+# any changes to the system
+
+# For accounts that need to exist in advance, and/or verify consistency
+# between -R LDAP and -R files
+# Recommendation is to have -R files used for 'local' verification during install
+
+# Other checks could be the existance of a seperate file system, volume group
+# etc. that you feel should not be made 'automatically' by the installp process.
+# if you want to make that simple - provide the steps as part of your your abort
+# message
+
+# ALSO an ideal time to save existig files to a save area, e.g. $TMPDIR
+# so that they can be recovered or merged during .config
+
+# on success exit with 0 status, non-zero will abort the install process
+[[ ! -z ${VERBOSE} ]] && \
+	print -- "+- `pwd` - $0 -+"
+# The line below is as wide as the lines printed during normal installp installs
+# it is provided as a reference
+# print -- "+-----------------------------------------------------------------------------+"
+exit 0

@@ -1,0 +1,180 @@
+$Id: TODO 225 2017-02-08 21:58:04Z michael $
+2016-12-16
+look into packaging /usr/* stuff (e.g., /usr/lib) - seems to be omitted atm
+
+2016-12-16
+* since it is intended for the whole lpp aka, all filesets
+* we can grep requisites for a stanza of
+$lpp:
+oldlpp level
+
+needs to become ${DOTBUILD}/$lpp.$ext.supercedes
+with
+$oldlpp.$ext $level
+
+as contents
+
+Need to add supercedes information - that the template does not support directly.
+Fileset
+  Fileset Name: aixtools.python.rte
+  Fileset VRMF: 2.7.12.3
+  Fileset Description: aixtools python 29-Sep-2016
+  USRLIBLPPFiles
+  Configuration Script: /data/prj/python/python-2.7.12.3/buildaix/python.rte.config
+  Pre_rm Script: /data/prj/python/python-2.7.12.3/buildaix/python.rte.pre_rm
+  Unconfiguration Script: /data/prj/python/python-2.7.12.3/buildaix/python.rte.unconfig
+  EOUSRLIBLPPFiles
+  Bosboot required: N
+  License agreement acceptance required: N
+  Name of license agreement:
+  Include license files in this package: N
+  Requisites: /data/prj/python/python-2.7.12.3/.buildaix/requisites.rte
+  USRFiles
+
+So, need in $DESTDIR/.info/xxxx.supersedes to get that data into package,
+from makebff.pl
+
+printf(LPP "/usr/lib/objrepos $numFiles\n");
+  printf(LPP "INSTWORK $configFileBlocks $configFileBlocks\n");
+  printf(SF "/usr/lib/objrepos $numFiles\n");
+  printf(SF "INSTWORK $configFileBlocks $configFileBlocks\n");
+
+  # Put LAFs/LAR in lpp_name
+  if ($laf{$fileset}) {
+    @lafs=split (/;/, $laf{$fileset});
+    foreach my $laf (@lafs) {
+      my $lafString = $laf;
+      $laf =~ s/^LAF//g;
+      $laf =~ s/^<.._..>//;
+      if ( -f ".$laf") {
+        ($dev, $ino, $mode, $nlink, $uid, $gid, $rdev, $size,
+         $atime, $mtime, $ctime, $blksize, $blocks) = stat ".$laf";
+
+        printf(LPP "%s %d\n", $lafString, $blocks);
+      }
+    }
+  }
+  if ($lar{$fileset}) {
+    printf(LPP "%s 0\n", $lar{$fileset});
+  }
+
+  printf(LPP "%%\n");
+
+  # Put supersede info in lpp_name
+  if ( -f "$CONFIGDIR/$fileset.supersede") {
+    open (SUPER, "<$CONFIGDIR/$fileset.supersede");
+    while (<SUPER>) {
+      printf(LPP $_);
+    }
+    close (SUPER);
+  }
+  printf(LPP "%%\n");
+
+****
+Thus, the data is not in the .template, but only in the .info directory,
+so, mkinstallp.ksh - after removing the old .info directory, needs to make it
+and copy ./buildaix/$fileset.supersede to $DESTDIR/.info - if it exists
+2015-06-25
+* add trustchk commands - to be run on AIX 6.1 system after initial build
+* the difficulty is getting the stanza (filenames) correct.
+
+** test 1 - sign/add to temporary file with file in position A
+** test 2 - verify signature is okay
+** test 3 - move file to position B, edit db.tsd so that filename is Pos B
+** test 4 - verify file, asin test2
+
+*** tests usccessful - so, I can calculate the values based on TEMPDIR
+*** then sed away the TEMPDIR value so that the real name exists
+*** fileset extention is tsd
+*** file will be /etc/security/tsd/$fileset.tsd
+*** certificate will be /etc/security/tsd/$fileset.cert
+*** these will be stored in package/buildaix/tsd
+*** will need an md5 hash ot be sure that values are correct.
+
+The fileset *.tsd config.tsd will verify the /etc/security/tsd/$fileset.tsd - if successful, then add the stanzas
+to /etc/security/tsd/tsd.dat (simple append)
+
+*** Files need to be added to a sample.tsd file - one by one, and modified as needed afterwards
+*** later this file can be used to add, by rote, information to/from the main tsd.dat file
+
+so find ${TEMPDIR}/opt/*bin, *lib with hash key added; /var/project/* as VOLATILE is a nice start
+
+2015-03-20
+* create a filesystem /var/$PRODUCT rather than writing directly in /var
+** started this, and nearly destroyed all the websites!
+
+2015-03-19
+* check tockets on sourceforge for extra ideas
+* start documenting/describing how to use
+             "Pre_rm Script"        )      PRERM_PATH=${REST_FILE_LINE#[ ]*}    ;;
+             "Pre-installation Script" )   PRE_PATH=${REST_FILE_LINE#[ ]*}      ;;
+             "Unpre-installation Script" ) UNPRE_PATH=${REST_FILE_LINE#[ ]*}    ;;
+             "Post-installation Script")   POST_PATH=${REST_FILE_LINE#[ ]*}     ;;
+             "Unpost-installation Script") UNPOST_PATH=${REST_FILE_LINE#[ ]*}   ;;
+             "Configuration Script")       CONFIG_PATH=${REST_FILE_LINE#[ ]*}   ;;
+             "Unconfiguration Script")     UNCONFIG_PATH=${REST_FILE_LINE#[ ]*} ;;
+2015-03-06
+* add argument to prevent specific LIBCRTL requirement
+* be able to pack a tarball -- see below to copy an existing dir
+* extra copy option - provide a file list and repackage existing existing files
+** better - unpack several .I packages and/or combine several existing packages into
+** one larger installp package
+* rename packages (in aixinfo) to aixtools.project.fileset.ext (e.g., aixtools.gnu.glib.rte)
+** aixtools.man.lang.fileset for manual pages
+** man pages get stored in /opt/share/man/manX and .post and .pre scripts add symbolic links
+** from /usr/share/man/manX to the /opt/share/man/manX - keeping track of links made
+** tracking info - to .buildaix rather that ./build/aix
+* ./buildaix contains input, alturnate buildaix scripts
+** ./buildaix/bin for scripts
+** ./buildaix/laf for fileset licence acceptance files
+** ./buildaix/liblpp for fileset liblpp.a static files
+**** .al, .cfginfo, .cfgfiles, .copyright, .err, .fixdata, .inventory, .namelist,
+**** .odmadd, .*.odmadd, .rm_inv, .size, .trc, lpp.acf, lpp.README, productid
+*** ./buildaix/liblpp/bin for fileset liblpp.a processing scripts
+**** .config/.config_u, .odmdel/.*.odmdel, .pre_d, .pre_i/.pre_u, .pre_rej, .pre_rm,
+**** .post_i/.post_u, .unconfig/.unconfig_u, .unodmadd, .unpost_i/.unpost_u, .unpre_i/.unpre_u
+**** .unconfig_d (when not provided .unconfig + .unpost_i + unpre_i are run instead)
+* add new command mkbuildaix to create a ./buildaix template
+* add command chkbuildaix to verify ./buildaix processing
+* be able to add a requirement to an existing .I file
+
+2014-10-02
+* add a parameter to mkinstallp.ksh so you can copy some directory ( even .)
+  to a temp location and then begin asif buildaix.ksh had already done the
+  make DESTDIR=/var/.... install.
+* add the code, and document it, to have pre_i, post_i, and config scripts
+  as options.
+* also document how to "holdnew" files so an update does not overwrite
+  existing config files.
+* much farther down the line: work out a procedure to create UPDATE packages.
+* document HOWTO specify prequisities to get added to template info
+* accept all of: ./.buildaix/* ./build/aix/* as locations for files
+* add /opt/buildaix/include as backup dir for zlib related include files
+  ** and others as they show up.
+* should there be any files that cannot be included in the normal
+  inventory because of special characters (e.g. '[' asin coreutils)
+  then create a .config script that can rename the file in inventory.al
+  to it's expected name, and also a config_u to remove the "strange" named file.
+  ** this could be done as a added fileset that has a prequisite relationship
+	 with the fileset being installed.
+* better argument processing
+  --cp, --copy for the argument above
+  --prefix to change default /opt (with implied /opt/bin)
+  --links, --ln to create symbolic links from ${prefix}/bin/<<list>> to /usr/bin
+	and/or /opt/bin
+* I have been lazy about CFLAGS for vac - adding c99ext by default. This should
+  be an argument to be added differently.
+2014-10-31
+* /opt/lib/charset.alias - "owned" by multiple filesets, conflict resolution needed!
+* sysck: 3001-036 WARNING:  File 
+		/opt/share/info/dir
+		is also owned by fileset aixtools.make.share.
+  sysck: 3001-036 WARNING:  File 
+		/opt/share/info/dir
+		is also owned by fileset aixtools.gettext.share.
+*     1500-030: (I) INFORMATION: process_mips_specific: Additional optimization may be attained by recompiling and specifying MAXMEM option with a value greater than 8192.
+2014-11-03
+* add argument for adding CFLAGS values, e.g., -qmaxmem=-1
+2014-11-08
+* add argument for fixing: set FORCE_UNSAFE_CONFIGURE=1 for those projects
+  that do not want configure run as root

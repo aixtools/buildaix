@@ -1,0 +1,28 @@
+#!/usr/bin/ksh
+# $Id: fileset.ext.post_i 264 2017-10-05 09:12:05Z michael $
+# script to perform any post processing on the files just installed.
+# an inportant file will be the file
+# ${PRODUCT}.${PROGRAM}.${FILESET}.al
+# located in /usr/lpp/${PRODUCT}.${PROGRAM}/liblpp.a
+# or /usr/lpp/${PRODUCT}.${PROGRAM}/inst_root/liblpp.a
+
+# lppbase=/usr/lpp/${PRODUCT}.${PROGRAM}
+# applylist=${lppbase}/${PRODUCT}.${PROGRAM}.${FILESET}.al
+# or
+# applylist=${lppbase}/inst_root/${PRODUCT}.${PROGRAM}.${FILESET}.al
+# At this point the files in the ${applylist} are installed on the system.
+# Now anything you want to do at 'root' level to make system changes
+# is possible. I like to verify that the correct security settings
+# are in place (NOSUID, and/or SUID/SGID only where/as needed
+
+# The key thing to remember for the best fit with mkinstallp .inventory
+# generation is that you can make sure the files have the correct userid/gid
+# as names. If not, you risk the install breaking off with an verification message.
+
+# on success exit with 0 status, non-zero will abort the install process
+[[ ! -z ${VERBOSE} ]] && \
+	print -- "+- `pwd` - $0 -+"
+# The line below is as wide as the lines printed during normal installp installs
+# it is provided as a reference
+# print -- "+-----------------------------------------------------------------------------+"
+exit 0

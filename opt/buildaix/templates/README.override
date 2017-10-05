@@ -1,0 +1,51 @@
+# $Id: README.override 140 2015-06-10 20:13:42Z michael $
+From /usr/lpp/bos/README.MKINSTALLP
+Note 7: The override inventory file needs to have the same structure as a normal
+        inventory file.  The path of this file (if it exists) needs to be specified in the
+        OVERRIDE_INVENTORY line in the template as shown in example 6 (/tmp/inv1).
+        With this file, we intend to change the value of owner, group, mode, size and checksum
+    fields of a file stanza as it is needed for user configurable files.
+    The user can specify any value in owner, group and mode.
+    For the size and checksum, the user can set up its value to VOLATILE only.
+        If the user does not set both values (size and checksum) fields with the VOLATILE value in the override
+        inventory file, the system will use the system values for the size
+    and checksum fields for a given stanza.
+        The user needs to provide stanza like the example below for each file that needs to be
+        modified with the VOLATILE value (/usr/bin/file1, /usr/bin/file2) and owner, group and
+    mode fields (usr/bin/file3):
+
+/usr/bin/file1:
+		owner =
+		group =
+		mode =
+		type =
+		class =
+		size = VOLATILE
+		checksum = VOLATILE
+
+/usr/bin/file2:
+		owner =
+		group =
+		mode =
+		type =
+		class =
+		size = VOLATILE
+		checksum = VOLATILE
+
+/usr/bin/file3:
+		owner = padmin
+		group = system
+		mode = 775
+		type =
+		class =
+		size =
+		checksum =
+
+/var/httpd/etc/httpd.conf:
+		owner = httpd
+		group = httpd
+		mode = 660
+		type =
+		class =
+		size = VOLATILE
+		checksum = VOLATILE

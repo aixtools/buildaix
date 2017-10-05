@@ -1,0 +1,28 @@
+# $Id: README.cfgfiles 264 2017-10-05 09:12:05Z michael $
+The name of the file needed for the automatic rte (run-time environment)
+to 'preserve' configuration files during an update or migration is:
+/full/path/filename_to_preserve preserve
+
+'preserve' is the most common cfgfile keyword - all the keywords are:
+
+preserve	save and then restore current
+auto_merge	post_i does processing
+hold_new	new is current, old is saved for reject (so removed after confirm!)
+user_merge	leaves new, keeps old in config save directory.
+		IBM recommends that this be AVOIDED if possible!
+		* when used, the files are left in "lppsave" directories
+		* and the user get a message that the "user" is expected to do the merge
+Other		like user_merge but no additional support or expectations by installp.
+		How this behaves is determined by fileset developer (note, no message
+		to "user"
+
+++++++
+My personal feelings:
+as preserve, auto_merge, and hold_new will tend to cause a failure during the inventory check
+made after the post_i script processing - I think it is will be easier to code stuff in the
+regular files.
+Just remember .pre_rm only run when there is an existing version installed. Specifically,
+an uninstall that leaves somethign behind is not noticed by either .cfgfiles 'actions'
+nor by .pre_rm script(s). The safe call is to write .pre_i, .unpre_i and .config scripts for install
+and perhaps a .unconfig and .unpre_i for deinstall (to save and restore a key file).
+

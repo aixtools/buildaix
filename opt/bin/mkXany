@@ -1,0 +1,24 @@
+#!/usr/bin/ksh -e
+# script to combine X32 and X64 to Xany
+
+[[ -e Xany ]] && mv Xany Xany.save.$(date "+%Y%m%d")
+rm -rf Xany
+mkdir Xany
+# basis is to copy X64 and then copy 32-bit archive members
+cp -rp X64/* Xany/
+
+# remove these bits from the Xany archive
+rm -f Xany/lpp_name Xany/*.I
+rm -rf Xany/usr/lpp
+find ./Xany -name \*.la | xargs rm -f 
+
+for libs in X64/opt/lib/*.a; do
+	cplib.ksh $libs
+done
+
+# just to make sure all .a files have been processed
+#
+print
+print "all archives are:"
+print date: `/usr/bin/date`
+find Xany -mtime 1 -name \*.a -ls | /usr/bin/sort +11
