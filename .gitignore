@@ -1,0 +1,4 @@
+.gitignote
+installp
+buildaix/*.template
+.buildaix
