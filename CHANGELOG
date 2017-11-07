@@ -1,4 +1,7 @@
-$Id: CHANGELOG 266 2017-10-05 09:39:35Z michael $
+buildaix 2.0.19.0: 2017-11-07
+ * source control now in git
+ * drop, or put behind $VERBOSE - most of the feedback currently output (mkinstallp.ksh)
+
 buildaix 2.0.18.0: 2017-10-05
  * add mkXany (and cplib.ksh) to automate making dual (32- and 64-bit) packages
  * work on mkinstallp.ksh - to support more of what makebff.pl can handle (e.g., .cfgfiles)
