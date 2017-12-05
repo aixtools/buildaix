@@ -1,3 +1,4 @@
+.gitignore
 .buildaix
 installp
 buildaix/*.template

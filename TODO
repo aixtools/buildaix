@@ -1,4 +1,8 @@
-$Id: TODO 225 2017-02-08 21:58:04Z michael $
+2017-11-07 (in Git, so remove $Id)
+
+ * update TODO file
+ * add support for unconfig_d - todo
+
 2016-12-16
 look into packaging /usr/* stuff (e.g., /usr/lib) - seems to be omitted atm
 

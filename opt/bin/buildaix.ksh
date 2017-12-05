@@ -28,9 +28,9 @@ function do_flags
 	cflags=${CFLAGS:=-O2}
 
 	# check for C compiler
-	type gcc 2>/dev/null
+	type gcc >/dev/null 2>&1
 	found_gcc=$?
-	type xlc 2>/dev/null
+	type xlc >/dev/null 2>&1
 	found_xlc=$?
 	[[ $found_xlc -eq 0 ]] && CC=${CC:=xlc_r} && export CC \
            && cflags="${cflags} -qmaxmem=-1 -qarch=pwr5" \
@@ -147,7 +147,6 @@ function do_aixinfo
 # key variables returned determined are: PROGRAM, PRODUCT, FILESET, VRMF
 # mkinstallp.ksh builds lpp and vrmf from these
 # call aixinfo to set $PROGRAM $PRODUCT $FILESET $VRMF
-# print -- todo_aixinfo: PROGRAM[$PROGRAM] PRODUCT[$PRODUCT] FILESET[$FILESET] VRMF[$VRMF]
 if [[ -e buildaix/bin/aixinfo ]] ; then
 	. buildaix/bin/aixinfo null 1
 else
@@ -157,8 +156,6 @@ else
 		print ${cmd}: exiting && exit -1
 	. aixinfo
 fi
-# print -- did_aixinfo: PROGRAM[$PROGRAM] PRODUCT[$PRODUCT] FILESET[$FILESET] VRMF[$VRMF]
-
 } # end do_aixinfo
 
 ######### getopts processing #########
@@ -193,11 +190,14 @@ while getopts "-:P:F:V:D:p:e:hfEUBT" opt; do
     P)
 	PRODUCT=${OPTARG}
 	FILESET=${FILESET:=${OPTARG}}
+	export PRODUCT
+	export FILESET
 	;;
 
     #specify Fileset name - override aixinfo
     F)
 	FILESET=${OPTARG}
+	export FILESET
 	;;
 
     #specify VRMF number - override aixinfo
@@ -354,7 +354,6 @@ done
 export lpp=${LPP}
 export fset=${FILESET}
 export vrmf=${VRMF}
- print -- VRMF ${VRMF}
 } # end do_getopts
 function do_make
 {

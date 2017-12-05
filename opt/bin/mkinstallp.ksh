@@ -155,11 +155,15 @@ function filename_verification
 	typeset _pwd
 	_pwd=${PWD}
 	cd ${LPPBASE}
-	> ${DOTBUILD}/moved
+	> ${DOTBUILD}/moved	# be sure file exists and is 0 bytes
 	find . | /usr/bin/egrep "\[|\(|\)|:|=|,| " | while read old
 	do
 		new=`echo ${old} | sed -e 's/[\[\(\):,= ]\{1,9\}/_/g'`
-		print renamed:${old}:${new} | tee -a ${DOTBUILD}/moved
+		if [[ ! -z ${VERBOSE} ]]; then
+			print renamed:${old}:${new} | tee -a ${DOTBUILD}/moved
+		else
+			print renamed:${old}:${new} >>${DOTBUILD}/moved
+		fi
 		mv -- "${old}" ${new}
 	done
 	cd ${_pwd}
@@ -240,9 +244,6 @@ function lpp_prepfiles
 #	prereq aixtools.gnu.gettext.rte 0.18.0.0
 #	prereq aixtools.gnu.gettext.share 0.18.0.0
 #
-# 2015-03-20 -- adding function, not using it yet
-## parse additional requisities from buildaix/requisites
-## write additional filesets statements via .buildaix/requisites.${ext}
 function lpp_requisites
 {
     typeset ext vrmf
@@ -255,11 +256,11 @@ function lpp_requisites
     touch ${DOTBUILD}/requisites.${ext}
     /usr/bin/grep -p ${ext}: ${BUILDAIX}/requisites | /usr/bin/egrep -v "^${ext}:$|^$" | \
 	while read fileset vrmf type; do
-		if [[ "$fileset" == ">"* ]]; then
+		if [[ "$fileset" == ">"*  || "$fileset" == "}"* ]]; then	# group requisite
 			print "$fileset $vrmf $type" >> ${DOTBUILD}/requisites.${ext}
 			continue
 		fi
-		[[ -z $fileset ]] && continue # just in case a blankline is not empty
+		[[ -z $fileset ]] && continue # just in case a 'blank' line is not empty
 		if [[ -z $vrmf ]]; then
 			vrmf=`lslpp -Lqc $fileset | /usr/bin/grep $fileset | awk -F: ' { print $3 } ' | head -1`
 		fi
@@ -346,11 +347,9 @@ function lpp_extra_files
 				mkdir -p ${LPPBASE}/usr/swlag/en_US
 				cp -p ${DOTBUILD}/${lpp}.la ${LPPBASE}/usr/swlag/en_US/${lpp}.la
 				LAF_FILE="LAF<en_US>/usr/swlag/en_US/${lpp}.la"
-				LAR_FILE="LAR/usr/swlag/%L/${lpp}.la"
+				# LAR_FILE="LAR/usr/swlag/%L/${lpp}.la"
 				LAR_FILE="LAR/usr/swlag/en_US/${lpp}.la"
 				LAF_INCLUDED="Y"
-				# print "/usr/swlag/en_US/${lpp}.la" >>/${TMP}/1.al
-				# LAR - License Aggreement Required - ignored for now
 			  ;;
 			*) ;;
 		esac
@@ -406,12 +405,12 @@ function lpp_extra_cfg
 	case $cfg in
 	  "cfgfiles")
 	    CFG_FILES="Y"	# One or more config files
-	    print $infile.$cfg " -> " ${_cfgdir}/${lpp}.$ext.$cfg
+	    #debugging print $infile.$cfg " -> " ${_cfgdir}/${lpp}.$ext.$cfg
 	    cp -p $infile.$cfg ${_cfgdir}/${lpp}.$ext.$cfg
 	    ;;
 	  "copyright")
 	    [[ ! -r ${DOTBUILD}/$lpp.copyright ]] && continue
-	    print $lpp.copyright " -> " ${_cfgdir}/$lpp.copyright
+	    #debugging print $lpp.copyright " -> " ${_cfgdir}/$lpp.copyright
 	    if [[ ${AIXV} == "5" ]]; then
 	      LPP_SPECIAL="Y"
 	      CFG_FILES="Y"	# One or more config files
@@ -419,14 +418,14 @@ function lpp_extra_cfg
 	    # else
 	    #   print "Copyright file path:  ${DOTBUILD}/$lpp.copyright" >> $template
 	    fi
-	    print $infile.$cfg " -> " ${_cfgdir}/$base.$cfg
+	    #debugging print $infile.$cfg " -> " ${_cfgdir}/$base.$cfg
 	    cp -p $infile.$cfg ${_cfgdir}/$base.$cfg
 				cp -p ${BASEDIR}/$file ${DOTBUILD}/$lpp.copyright
 	    ;;
 	  "override")
 	    [[ ${AIXV} == "5" ]] && continue
 	    CFG_FILES="Y"	# One or more config files
-	    print $base.$cfg " -> " ${_cfgdir}/$lpp.$base.$cfg
+	    #debugging print $base.$cfg " -> " ${_cfgdir}/$lpp.$base.$cfg
 	    cp -p $infile.$cfg ${_cfgdir}/${lpp}.$base.$cfg
 	    ;;
 	  "README"  |\
@@ -787,9 +786,11 @@ EOF
 	> ${DOTBUILD}/requisites.${ext}
 	lpp_requisites ${ext}
 	add_bos_prereq
-#	must be in requisites rather than automated
+#	must be in requisites rather than directly into template file
 #	[[ ${share} -gt 0 ]] && print "*coreq ${lpp}.share  ${vrmf}" >>${DOTBUILD}/requisites.${ext}
 #	[[ ${share} -gt 0 ]] && print "*coreq ${lpp}.share  ${vrmf}" >`tty`
+
+# TODO - set a switch to disable this line
 	print "*prereq bos.rte  ${RTEVRML}" >>${DOTBUILD}/requisites.${ext}
 
 	cat - <<EOF >>$template
@@ -964,7 +965,11 @@ EOF
     unset MAKEBFF_LOCATION
     PATH=${oPATH}
 fi
-mkinstallp -d ${LPPBASE} -T ${template}
+if [[ -z ${VERBOSE} ]]; then
+	mkinstallp -d ${LPPBASE} -T ${template} 2>&1 >/dev/null
+else
+	mkinstallp -d ${LPPBASE} -T ${template} 2>&1 >`tty`
+fi
 status=$?
 wait
 
