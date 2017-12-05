@@ -189,9 +189,7 @@ while getopts "-:P:F:V:D:p:e:hfEUBT" opt; do
     #specify Product of $Program.#PRODUCT.$Fileset name - override aixinfo
     P)
 	PRODUCT=${OPTARG}
-	FILESET=${FILESET:=${OPTARG}}
 	export PRODUCT
-	export FILESET
 	;;
 
     #specify Fileset name - override aixinfo
