@@ -190,11 +190,14 @@ while getopts "-:P:F:V:D:p:e:hfEUBT" opt; do
     P)
 	PRODUCT=${OPTARG}
 	FILESET=${FILESET:=${OPTARG}}
+	export PRODUCT
+	export FILESET
 	;;
 
     #specify Fileset name - override aixinfo
     F)
 	FILESET=${OPTARG}
+	export FILESET
 	;;
 
     #specify VRMF number - override aixinfo
