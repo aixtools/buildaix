@@ -83,13 +83,7 @@ function do_flags
 function do_configure
 {
 # if Makefile already exists, skip calling config(ure)
-if [[ -e ./Makefile ]]; then
-	print $0: using existing Makefile
-	print $0: run ${MAKE} distclean to get a standard AIX configure
-	print
-	ls -l ./Makefile config.*
-	print
-else
+if [[ ! -e ./Makefile ]]; then
 # TODO add --verbose flag checking
 	do_flags
 	# set eprefix if not same as prefix
@@ -97,17 +91,17 @@ else
 
 	[[ ${prefix} != ${eprefix} ]] && \
 		EPREFIX="--exec-prefix=${eprefix}"
-# determine if the sources are current directory, or a sub-directory
-# by finding configure. If in . assume all is here
-. aixinfo
-if test -e ./configure; then
-	CONFIGURE="./configure"
-elif test -e ../src/${DIRNAME}/configure; then
-	CONFIGURE="../src/${DIRNAME}/configure"
-else
-	print $0: cannot find CONFIGURE
-	exit -1
-fi
+	# determine if the sources are current directory, or a sub-directory
+	# by finding configure. If in . assume all is here
+	. aixinfo
+	if test -e ./configure; then
+		CONFIGURE="./configure"
+	elif test -e ../src/${DIRNAME}/configure; then
+		CONFIGURE="../src/${DIRNAME}/configure"
+	else
+		print $0: cannot find CONFIGURE
+		exit -1
+	fi
 	print "+ CPPFLAGS=\"${CPPFLAGS}\" CFLAGS=\"${CFLAGS}\"\\\\\n\
 	${CONFIGURE}\\\\\n\
 		--prefix=${prefix} ${EPREFIX}\\\\\n\
@@ -136,6 +130,14 @@ fi
 		print ±±±±±±±±±±±±±±±±±±±
 		print
 		exit -1
+	fi
+else
+	print $cmd: using existing Makefile
+	print $cmd: run \'make distclean\' or \'rm Makefile\' to run configure
+	if /usr/bin/test ${VERBOSE}x != x; then
+		print
+		ls -l ./Makefile config.*
+		print
 	fi
 fi
 } # end do_configure
@@ -355,8 +357,6 @@ export vrmf=${VRMF}
 } # end do_getopts
 function do_make
 {
-	print "+ ${MAKE} > .buildaix/make.out"
-
         type gmake 2>/dev/null
         if [[ $? -eq 0 ]]; then
                 MAKE=gmake
@@ -366,6 +366,7 @@ function do_make
                 MAKE=make
         fi
 
+	print "+ ${MAKE} > .buildaix/make.out"
 	${MAKE} > .buildaix/make.out
 	[[ $? -ne 0 ]] && print "${MAKE}" returned an error && exit -1
 } # end do_make
