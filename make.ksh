@@ -49,7 +49,7 @@ rm -rf .buildaix
 mkdir -p .buildaix
 
 mkdir -p ${TEMPDIR}/opt/bin
-for file in buildaix.ksh aixinfo mkinstallp.ksh mkXany cplib.ksh ; do
+for file in buildaix.ksh aixinfo mkinstallp.ksh mkXany mkX32 mkX64 cplib.ksh ; do
 	cp -p opt/bin/$file ${TEMPDIR}/opt/bin
 done
 

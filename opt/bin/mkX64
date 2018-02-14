@@ -1,0 +1,7 @@
+#!/usr/bin/ksh
+DIR=X64
+/usr/bin/rm -rf ${DIR}
+/usr/bin/mkdir -p ${DIR}
+cd ${DIR}
+restore -xqf ../installp/ppc/*.I
+cd ..

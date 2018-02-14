@@ -92,12 +92,21 @@ if [[ ! -e ./Makefile ]]; then
 	[[ ${prefix} != ${eprefix} ]] && \
 		EPREFIX="--exec-prefix=${eprefix}"
 	# determine if the sources are current directory, or a sub-directory
+	# or a sub-sub-directory (when "static" builds are being done!
 	# by finding configure. If in . assume all is here
 	. aixinfo
 	if test -e ./configure; then
 		CONFIGURE="./configure"
 	elif test -e ../src/${DIRNAME}/configure; then
 		CONFIGURE="../src/${DIRNAME}/configure"
+	elif test -e ../../src/${DIRNAME}/configure; then
+		CONFIGURE="../../src/${DIRNAME}/configure"
+		if [[ $PRODUCT == "static" ]]; then
+		    export PROGRAM=static
+		    [[ ! -z $cfgargs ]] && cfgargs="${cfgargs} --enable-shared=no"
+		    [[ -z $cfgargs ]] && cfgargs="--enable-shared=no"
+		    print "Enabled to do static library build"
+		fi
 	else
 		print $0: cannot find CONFIGURE
 		exit -1
@@ -109,7 +118,7 @@ if [[ ! -e ./Makefile ]]; then
 		--sharedstatedir=/var/${FILESET}/com\\\\\n\
 		--localstatedir=/var/${FILESET}\\\\\n\
 		--mandir=/usr/share/man\\\\\n\
-		--infodir=/opt/share/info/${FILESET} $cfgargs\\\\\n\
+		--infodir=/opt/share/info/${FILESET} ${cfgargs}\\\\\n\
 			> .buildaix/configure.out"
 
 	CPPFLAGS="${CPPFLAGS}" CFLAGS="${CFLAGS}" ${CONFIGURE} \
@@ -118,7 +127,7 @@ if [[ ! -e ./Makefile ]]; then
 		--sharedstatedir=/var/${FILESET}/com \
 		--localstatedir=/var/${FILESET} \
 		--mandir=/usr/share/man \
-		--infodir=/opt/share/info/${FILESET} $cfgargs \
+		--infodir=/opt/share/info/${FILESET} ${cfgargs} \
 			> .buildaix/configure.out
 # VERBOSE stuff
 	if [[ $? -ne 0 ]]; then
