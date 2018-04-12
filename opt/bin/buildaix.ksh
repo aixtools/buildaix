@@ -433,8 +433,10 @@ cmd=${cmd0##*/}
 # arguments that might be passed to CONFIGURE later
 cfgargs=$*
 
-# default prefix is /opt/${PROGRAM}
-prefix=${prefix:="/opt/${PROGRAM}"}
+# default prefix is /opt/${PROGRAM} - in the future
+# only set the default if prefix is not already set
+# prefix=${prefix:="/opt/${PROGRAM}"}
+prefix=${prefix:="/opt"}
 
 BASE=`pwd`
 INFO=${BASE}/.buildaix
