@@ -269,7 +269,7 @@ function lpp_requisites
 	done
 }
 
-# mk_fileset_al
+# Make fileset ApplyLists
 # create the list of files for the named fileset
 # extract these files from the global list - so they are not installed multiple times
 function mk_fileset_al
@@ -281,6 +281,22 @@ function mk_fileset_al
 	/usr/bin/egrep "${rexp}/" ${TMP}/1.al > ${TMP}/${name}.al
 	# remove what I found
 	/usr/bin/egrep -v "${rexp}/" ${TMP}/1.al > ${TMP}/2.al
+	# remove the directory base withoout the / ending
+	/usr/bin/egrep -v "${rexp}$" ${TMP}/2.al > ${TMP}/1.al
+	rm -f ${TMP}/2.al
+}
+
+# mk_fileset_adt
+# create the list of files for the adt fileset (Application Development Tools)
+function mk_fileset_adt
+{
+	rexp=$1
+	name=$2
+	# extract what I am looking for to ${name}.al - rexp must be a directory
+	/usr/bin/egrep "${rexp}/" ${TMP}/1.al | /usr/bin/egrep -v "${rexp}/.*/" > ${TMP}/${name}.al
+	# remove what I found
+	/usr/bin/egrep "${rexp}/.*/" > ${TMP}/2.al
+	/usr/bin/egrep -v "${rexp}/" ${TMP}/1.al >> ${TMP}/2.al
 	# remove the directory base withoout the / ending
 	/usr/bin/egrep -v "${rexp}$" ${TMP}/2.al > ${TMP}/1.al
 	rm -f ${TMP}/2.al
@@ -671,16 +687,11 @@ function add_fileset
 	label=$3
 	du_sizes=$4
 
-	mk_fileset_al ${expression} ${extension}
-
-
         cd ${LPPBASE}
+	mk_fileset_al ${expression} ${extension}
 	# if there are files to be included - include them!
         if [[ -s ${TMP}/${extension}.al ]]
         then
-	    ####du -s ${dir}
-	    ####set `du -s ${dir}`
-	    ####szdir=$1
 	    if [[ $PRODUCT != ${FILESET} ]]; then
 		descr="${PRODUCT} ${FILESET} ${label}"
 	    else
@@ -766,7 +777,6 @@ Fileset
   Fileset VRMF: ${vrmf}
   Fileset Description: ${descr}
 EOF
-
 	[[ ${AIXV} != "5" ]] && [[ -r ${DOTBUILD}/$lpp.copyright ]] &&\
 	    print "Copyright file path: ${DOTBUILD}/$lpp.copyright" >> $template
 	usrlpp_files ${extension}
@@ -787,6 +797,7 @@ EOF
 	lpp_requisites ${ext}
 	add_bos_prereq
 #	must be in requisites rather than directly into template file
+#	if [[ -s ${TMP}.adt.al ]] && print "*instreq $PROGRAM.adt.$FILESET ${vrmf}" >>${DOTBUILD}/requisites.${ext}
 #	[[ ${share} -gt 0 ]] && print "*coreq ${lpp}.share  ${vrmf}" >>${DOTBUILD}/requisites.${ext}
 #	[[ ${share} -gt 0 ]] && print "*coreq ${lpp}.share  ${vrmf}" >`tty`
 
@@ -796,18 +807,15 @@ EOF
 	cat - <<EOF >>$template
   Requisites: ${DOTBUILD}/requisites.${ext}
 EOF
-
 	do_upsize "/usr" >> $template
 	do_upsize "/opt" >> $template
 	do_upsize "/var" >> $template
 	do_upsize "/etc" >> $template
 	print "  USRFiles" >> $template
 
-# USR part -- i.e. files in /usr and /opt
-# why "usr" and not $extension ("rte")
-	mk_fileset_al "^/(opt|usr)" "usr"
-
-	cat ${TMP}/usr.al >>${template}
+# USR part -- i.e. files in /usr and /opt as rte - run-time-environment
+	mk_fileset_al "^/(opt|usr)" "rte"
+	cat ${TMP}/rte.al >>${template}
 
 	print "  EOUSRFiles" >> $template
 
@@ -928,6 +936,9 @@ add_fileset "^/(opt|usr)/share/man" "man" "man pages" "*/share/man"
 
 ## Add shared pages as seperate fileset
 add_fileset "^/(opt|usr)/share" "share" "universal files" "*/share"
+
+## Add adt as seperate fileset
+add_fileset "^/(opt|usr)/(include|lib)" "adt" "ADT files" "*/(include|lib)"
 
 # add_fileset "^/(opt|usr)" "rte" "run-time" "usr opt"
 # add all remaining files as "rte"

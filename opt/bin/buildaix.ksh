@@ -1,9 +1,5 @@
 #!/usr/bin/ksh
-#   Copyright 2012-2015 -- Michael Felt, aka AIXTOOLS
-# $Date: 2017-09-21 12:28:21 +0000 (Thu, 21 Sep 2017) $
-# $Revision: 251 $
-# $Author: root $
-# $Id: buildaix.ksh 251 2017-09-21 12:28:21Z root $
+#   Copyright 2012-2018 -- Michael Felt, aka AIXTOOLS
 #
 
 function do_flags
@@ -92,12 +88,21 @@ if [[ ! -e ./Makefile ]]; then
 	[[ ${prefix} != ${eprefix} ]] && \
 		EPREFIX="--exec-prefix=${eprefix}"
 	# determine if the sources are current directory, or a sub-directory
+	# or a sub-sub-directory (when "static" builds are being done!
 	# by finding configure. If in . assume all is here
 	. aixinfo
 	if test -e ./configure; then
 		CONFIGURE="./configure"
 	elif test -e ../src/${DIRNAME}/configure; then
 		CONFIGURE="../src/${DIRNAME}/configure"
+	elif test -e ../../src/${DIRNAME}/configure; then
+		CONFIGURE="../../src/${DIRNAME}/configure"
+		if [[ $PRODUCT == "static" ]]; then
+		    export PROGRAM=static
+		    [[ ! -z $cfgargs ]] && cfgargs="${cfgargs} --enable-shared=no"
+		    [[ -z $cfgargs ]] && cfgargs="--enable-shared=no"
+		    print "Enabled to do static library build"
+		fi
 	else
 		print $0: cannot find CONFIGURE
 		exit -1
@@ -109,7 +114,7 @@ if [[ ! -e ./Makefile ]]; then
 		--sharedstatedir=/var/${FILESET}/com\\\\\n\
 		--localstatedir=/var/${FILESET}\\\\\n\
 		--mandir=/usr/share/man\\\\\n\
-		--infodir=/opt/share/info/${FILESET} $cfgargs\\\\\n\
+		--infodir=/opt/share/info/${FILESET} ${cfgargs}\\\\\n\
 			> .buildaix/configure.out"
 
 	CPPFLAGS="${CPPFLAGS}" CFLAGS="${CFLAGS}" ${CONFIGURE} \
@@ -118,7 +123,7 @@ if [[ ! -e ./Makefile ]]; then
 		--sharedstatedir=/var/${FILESET}/com \
 		--localstatedir=/var/${FILESET} \
 		--mandir=/usr/share/man \
-		--infodir=/opt/share/info/${FILESET} $cfgargs \
+		--infodir=/opt/share/info/${FILESET} ${cfgargs} \
 			> .buildaix/configure.out
 # VERBOSE stuff
 	if [[ $? -ne 0 ]]; then
@@ -279,7 +284,6 @@ EOF
 	;;
 
     p)      # install executables in subdirectory of ${prefix}
-		print "PREFIX mode"
 		prefix="${OPTARG}"
                 # strip a trailing '/', if any
 		prefix=`print -- ${prefix} | sed -e 's/\/$//'`
@@ -287,16 +291,12 @@ EOF
 		;;
 
     e)      # install executables in subdirectory of ${prefix}/${OPTARG}
-		print "EPREFIX mode: --eprefix=\$prefix/${OPTARG} added"
 		eprefix="${OPTARG}"
-		## maybe add this somewhere !
-		## [[ ! -z ${EPREFIX} ]] && EPREFIX="--exec-prefix=/opt/${PRODUCT}/${FILESET}"
 		eprefix=`print -- ${eprefix} | sed -e 's/\/$//'`
 		;;
 
-    E)      # install executables in subdirectory of /$prefix/${PRODUCT}/${FILESET}
-		print "EPREFIX mode: --eprefix=\$prefix/${PRODUCT}/${FILESET} added"
-		eprefix="\${prefix}/${PRODUCT}/${FILESET}"
+    E)      # install executables in subdirectory of /$prefix/${FILESET}
+		eprefix="\${prefix}/${FILESET}"
 		;;
 
     U)		# force UNSAFE mode for projects needing this
@@ -363,7 +363,7 @@ function do_make
         elif [[ -e /opt/bin/make ]]; then
                 MAKE=/opt/bin/make
         else
-                MAKE=make
+                MAKE=/usr/bin/make
         fi
 
 	print "+ ${MAKE} > .buildaix/make.out"
@@ -433,8 +433,8 @@ cmd=${cmd0##*/}
 # arguments that might be passed to CONFIGURE later
 cfgargs=$*
 
-# default prefix is /opt
-prefix=${prefix:="/opt"}
+# default prefix is /opt/${PROGRAM}
+prefix=${prefix:="/opt/${PROGRAM}"}
 
 BASE=`pwd`
 INFO=${BASE}/.buildaix
