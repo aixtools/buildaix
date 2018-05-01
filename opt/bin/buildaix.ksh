@@ -93,6 +93,8 @@ if [[ ! -e ./Makefile ]]; then
 	. aixinfo
 	if test -e ./configure; then
 		CONFIGURE="./configure"
+	elif test -e ../git/${DIRNAME}/configure; then
+		CONFIGURE="../git/${DIRNAME}/configure"
 	elif test -e ../src/${DIRNAME}/configure; then
 		CONFIGURE="../src/${DIRNAME}/configure"
 	elif test -e ../../src/${DIRNAME}/configure; then
