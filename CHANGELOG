@@ -1,3 +1,9 @@
+buildaix 2.1.2.1: 2019-12-17
+ * when subdir =="static" go one level deeper for the product and set PROGRAM to static
+
+buildaix 2.1.2.0:
+ * find git/product-version as source
+
 buildaix 2.1.1.0: 2017-04-12
  * revert change to prefix - until it is integrated into the mkinstallp program
  ** and the stuff added to deal with creating links (and removing them)

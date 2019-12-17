@@ -52,7 +52,15 @@ basedir=$1
 SUBDIR=${basedir%/*}
 DIRNAME=${basedir##*/}
 
+# If the direct sub-directory is "static" then take product from one-level deeper
+# and set PROGRAM to "static"
 product=${SUBDIR##*/}
+if [[ ${product} == "static" ]]; then
+  export PROGRAM="static"
+  SUBDIR="${SUBDIR%/*}"
+  product=${SUBDIR##*/}
+fi
+
 fileset=${DIRNAME%%-[0-9]*}
 
 version1=${DIRNAME#${fileset}}
