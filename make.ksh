@@ -23,8 +23,12 @@
 # call "configure" of project, or just run make if Makefile exists
 
 cmd=$0
-lslpp -L bos.adt.insttools >/dev/null
-[[ $? -ne 0 ]] && print "must have bos.adt.insttools installed" && exit -1
+lslpp -L bos.adt.insttools >/dev/null || \
+  (print "must have bos.adt.insttools installed" && exit 99)
+[[ `id -u` -ne 0 ]] \
+        && print "${cmd}: mkinstallp must be run with root authority" >&2 \
+        && exit 97
+
 
 # when packaing buildaix - always 32-bit mode!
 unset OBJECT_MODE
@@ -34,11 +38,57 @@ PATH=${cwd}/opt/bin:${PATH}
 unset vrmf
 unset lpp
 
+while getopts "-:V:P:F:h" opt; do
+    case $opt in
+
+    # INVALID
+    :)
+        print "${cmd}: Invalid syntax: -${OPTARG} needs an argument" > ${tty}
+        error="error"
+        exit 91
+        ;;
+
+    # print "${cmd}: Invalid option: -${opt}" > ${tty}
+    \?)
+        print "${cmd}: Invalid option: " > ${tty}
+        error="error"
+        exit 92
+        ;;
+
+    #specify Product of $Program.#PRODUCT.$Fileset name - override aixinfo
+    P)
+        PRODUCT=${OPTARG}
+        export PRODUCT
+        ;;
+
+    #specify Fileset name - override aixinfo
+    F)
+        FILESET=${OPTARG}
+        export FILESET
+        ;;
+
+    #specify VRMF number - override aixinfo
+    V)
+        v=${OPTARG}
+        cnt=`echo ${v} | awk -F. ' { print NF } '`
+        if [[ $cnt -eq 4 ]]; then
+                VRMF=${v}
+        else
+                print -- ${v} is not a valid vrmf format
+                exit -2
+        fi
+        unset v
+        ;;
+    esac
+done
+
 . opt/bin/aixinfo # set environment and installp variables
 
 # my "install"
 LPP=${PROGRAM}/${PRODUCT}
 TEMPDIR=/var/tmp/${LPP}/${FILESET}/${VRMF}
+export PROGRAM PRODUCT FILESET VRMF
+
 rm -rf ${TEMPDIR}
 mkdir -p ${TEMPDIR}
 [[ $? -ne 0 ]] && print $cmd: cannot make TEMPDIR at $TEMPDIR && exit -1
