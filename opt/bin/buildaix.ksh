@@ -99,8 +99,7 @@ if [[ ! -e ./Makefile ]]; then
 		CONFIGURE="../src/${DIRNAME}/configure"
 	elif test -e ../../src/${DIRNAME}/configure; then
 		CONFIGURE="../../src/${DIRNAME}/configure"
-		if [[ $PRODUCT == "static" ]]; then
-		    export PROGRAM=static
+		if [[ $PROGRAM == "static" ]]; then
 		    [[ ! -z $cfgargs ]] && cfgargs="${cfgargs} --enable-shared=no"
 		    [[ -z $cfgargs ]] && cfgargs="--enable-shared=no"
 		    print "Enabled to do static library build"
