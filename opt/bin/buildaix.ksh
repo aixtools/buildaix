@@ -265,7 +265,8 @@ VRMF=${VRMF}
 TARGETDIR=/var/${PROGRAM}/${PRODUCT}/${FILESET}/${VRMF}
 rm -rf \${TARGETDIR}
 mkdir -p \${TARGETDIR}
-/usr/bin/cp -rph ${source}/* \${TARGETDIR}
+# /usr/bin/cp -rph ${source}/* \${TARGETDIR}
+(cd ${source}; find . | backup -if - ) | (cd ${TARGETDIR}; restore -xqf - >/dev/null) 
 
 # Part 2a - these variables are needed by mkinstallp for the template 
 export lpp=${lpp}

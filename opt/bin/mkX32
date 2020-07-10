@@ -1,6 +1,4 @@
 #!/usr/bin/ksh
 /usr/bin/rm -rf X32
 /usr/bin/mkdir -p X32
-cd X32
-restore -xqf ../installp/ppc/*.I
-cd ..
+mv installp/ppc/*.I X32
