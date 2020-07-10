@@ -461,8 +461,8 @@ mkdir -p ./.buildaix
 unset lpp
 unset vrmf
 
-do_getopts $cfgargs
 do_aixinfo
+do_getopts $cfgargs
 
 lppdir=${PROGRAM}/${PRODUCT}/${FILESET}
 TARGETDIR=/var/${PROGRAM}/${PRODUCT}/${FILESET}/${VRMF}
