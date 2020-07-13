@@ -1,5 +1,5 @@
 #!/usr/bin/ksh
-#   Copyright 2012-2017 -- Michael Felt
+#   Copyright 2012-2020 -- Michael Felt, AIXTOOLS
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -13,11 +13,6 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 #
-# $Date: 2017-10-05 09:38:56 +0000 (Thu, 05 Oct 2017) $
-# $Revision: 265 $
-# $Author: michael $
-# $Id: mkinstallp.ksh 265 2017-10-05 09:38:56Z michael $
-
 # minstallp.ksh # create a template file (and copy additional configfiles)
 # that will be used by /usr/bin/mkinstallp and /usr/sbin/makebff.pl
 # to create an installp package
@@ -626,19 +621,23 @@ function do_upsize
 # du | sort -k 2 | /usr/bin/grep "/" | head | awk ' { print " Upsize:", $2, $1 ";"} ' | cut -c 2- 
 # for some dir do the dir and it subdirs
 # du | /usr/bin/egrep -v "^0" | /usr/bin/grep "./" | sort -k 2 | awk ' { print " Upsize:", $2, $1 ";"} ' | cut -c 2- 
-for d in etc opt var
+dirlist=$1
+[[ -z ${dirlist} ]] && dirlist="etc opt var"
+
+for dir in ${dirlist}
 do
-	if [[ -d $d/${FILESET} ]]
+	if [[ -d ${dir}/${FILESET} ]]
 	then
-		set `du -s $d/${FILESET}`
-	else
-		[[ -d $d ]] && set `du -s $d`
+		set `du -s ${dir}/${FILESET}`
+                let szdir=$1+1
+                echo "      Upsize: $2 ${szdir};" >> $template
 	fi
 	# make sure the argument exists before using setting values
-	if [[ -d $d ]]
+	if [[ -d ${dir} ]]
 	then
-		eval nm$d=/"$2"
-		let sz$d=$1
+		set `du -s ${dir}`
+                let szdir=$1+1
+                echo "      Upsize: $2 ${szdir};" >> $template
 	fi
 done
 }
@@ -723,11 +722,7 @@ EOF
 ##  fi
 ## TODO ## process Requisites rather than leave blank
 ## as only .rte has requisites processing
-	    for du_dir in $du_sizes
-	    do
-		do_upsize $du_dir >> $template
-	    done
-####echo "  Upsize: /${dir} ${szdir};" >> $template
+            do_upsize $du_sizes
 	    echo "  USRFiles" >> $template
 	
 ## this needs to be modified so that it only scans valid files
@@ -754,13 +749,13 @@ EOF
 # 
 function add_fileset_rte
 {
+        # Add the remaining files - opt and usr are the USR part
 	typeset expression extension descr du_sizes share fileset ext
-	# mk_fileset_al "^/(opt|usr)" "usr"
-#	expression=$1
-#	expression="^/(opt|usr)"
+	# mk_fileset_al "^/(opt|usr)" "rte"
+ 	expression="^/(opt|usr)"
 	extension="rte"
 #	descr=$3
-#	du_sizes=$4
+	du_sizes="opt usr"
         # we could make it a coreq - always, but do not know if the .share exists
 	# so we do not automate: *coreq $lpp.share
 	# instead - it should in the "requisites" file
@@ -807,17 +802,18 @@ EOF
 	cat - <<EOF >>$template
   Requisites: ${DOTBUILD}/requisites.${ext}
 EOF
-	do_upsize "/usr" >> $template
-	do_upsize "/opt" >> $template
-	do_upsize "/var" >> $template
-	do_upsize "/etc" >> $template
+	do_upsize $du_sizes
 	print "  USRFiles" >> $template
 
 # USR part -- i.e. files in /usr and /opt as rte - run-time-environment
-	mk_fileset_al "^/(opt|usr)" "rte"
-	cat ${TMP}/rte.al >>${template}
+	# mk_fileset_al "^/(opt|usr)" "rte"
+        mk_fileset_al ${expression} ${extension}
+	cat ${TMP}/${extension}.al >>${template}
 
 	print "  EOUSRFiles" >> $template
+
+        
+        ## Add the remaining files - etc and var
 
 	## do ROOT part if there are any files in /etc or /var
 	## also requires copying the structure of the LPPBASE (aka DESTBUILD)
@@ -851,8 +847,8 @@ EOF
 		rootlpp_files rte
 
 		# output the root part sizes
-		[[ $szvar -gt 0 ]] && do_upsize "/var" >> $template
-		[[ $szetc -gt 0 ]] && do_upsize "/etc" >> $template
+		[[ $szvar -gt 0 ]] && do_upsize "var" >> $template
+		[[ $szetc -gt 0 ]] && do_upsize "etc" >> $template
 
 		# output the ROOT part files
 		cat - <<EOF >>$template
