@@ -1,5 +1,14 @@
 #!/usr/bin/ksh -e
 # script to combine X32 and X64 to Xany
+ls -l X32/*.I >/dev/null 2>&1 || (print -- "$0: No files in ./X32/ Abort." && exit -1)
+ls -l X64/*.I >/dev/null 2>&1 || (print -- "$0: No files in ./X64/ Abort." && exit -1)
+
+[[ -d Xany ]] && mv Xany Xany.save.$(date "+%Y%m%d-%H:%M.%S")
+mkdir Xany
+
+prefix=$1
+[[ -z ${prefix} ]] && prefix="/opt"
+
 for DIR in X32 X64; do
   cd ${DIR}
   rm -rf usr opt
@@ -8,9 +17,6 @@ for DIR in X32 X64; do
   cd ..
 done
 
-[[ -e Xany ]] && mv Xany Xany.save.$(date "+%Y%m%d")
-rm -rf Xany
-mkdir Xany
 # basis is to copy X64 and then copy 32-bit archive members
 print Copy 64-bit version
 cp -rp X64/* Xany/
