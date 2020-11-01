@@ -23,11 +23,15 @@
 # call "configure" of project, or just run make if Makefile exists
 
 cmd=$0
-lslpp -L bos.adt.insttools >/dev/null || \
-  (print "must have bos.adt.insttools installed" && exit 99)
+lslpp -L bos.adt.insttools >/dev/null 2>&1
+if [[ $? -ne 0 ]]; then
+  print "${cmd}: must have bos.adt.insttools installed"
+  exit 99
+fi
+
 [[ `id -u` -ne 0 ]] \
-        && print "${cmd}: mkinstallp must be run with root authority" >&2 \
-        && exit 97
+  && print "${cmd}: mkinstallp must be run with root authority" >&2 \
+  && exit 97
 
 
 # when packaing buildaix - always 32-bit mode!
