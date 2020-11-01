@@ -660,6 +660,7 @@ function do_requisites_ext
 function add_bos_prereq
 {
 # add a Requisite for at least the current libc fileset - to prevent installing AIX 6.1 on AIX 5.3, etc.
+[[ ${PRODUCT} == "buildaix" ]] && return # do not add when packaginig buildaix scripts
 RTEVRML=`lslpp -Lqc bos.rte.libc | awk -F: ' { print $3 } '|sed s/[0-9]*$/0/'`
 AIXVER=`echo ${RTEVRML} | awk -F. '{print "aix" $1 $2 $3}'`
 }
