@@ -1,6 +1,7 @@
 #!/usr/bin/ksh -e
 ls -l installp/ppc/*.I >/dev/null 2>&1 || (print -- "$0: No files in installp/ppc; Abort." && exit -1)
 
-[[ -d X32 ]] && /usr/bin/rm -r X32 
-/usr/bin/mkdir X32
-mv installp/ppc/*.I X32
+DIR=X32
+[[ -d ${DIR} ]] && /usr/bin/rm -r ${DIR}
+/usr/bin/mkdir ${DIR}
+mv installp/ppc/*.I ${DIR}
