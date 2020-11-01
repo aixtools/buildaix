@@ -86,6 +86,9 @@ while getopts "-:V:P:F:h" opt; do
     esac
 done
 
+# Add line to set FILESET='buildaix', if not set to something else
+FILESET=${FILESET-"buildaix"}
+[[ -z $v ]] && print "$0: must supply a new version number" && exit -1
 . opt/bin/aixinfo # set environment and installp variables
 
 # my "install"
