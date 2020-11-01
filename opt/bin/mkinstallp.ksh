@@ -84,6 +84,10 @@ function set_ugid_access
 
 	# all directories are accessible by default
 	find ${INST_FILES} -type d -exec chmod og+x {} \;
+	# make sure etc, dev and opt are uid.gid root.system - if they exist -
+	for dir in etc opt dev; do
+	  [[ -d ${INST_FILES}/${dir} ]] && chown root.system ${INST_FILES}/${dir}
+	done
 	cd ${_pwd}
 }
 
