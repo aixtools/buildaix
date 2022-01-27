@@ -1,3 +1,12 @@
+buildaix 2.1.4.0:  Sun Nov 1 15:59:33 2020 +0100
+commit 2318f13d58843b8e03b7735f41895be2cff72421 (tag: v2.1.4.0)
+Merge: 0db8b6f f081b7c
+Author: Michael Felt <aixtools@users.noreply.github.com>
+Date:   Sun Nov 1 15:59:33 2020 +0100
+
+## read the git log for the changes
+
+
 buildaix 2.1.2.1: 2019-12-17
  * when subdir =="static" go one level deeper for the product and set PROGRAM to static
 
