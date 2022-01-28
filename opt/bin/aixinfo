@@ -1,15 +1,10 @@
 #!/usr/bin/ksh
-#   Copyright 2012-2015 -- Michael Felt
-# $Date: 2017-06-15 14:43:35 +0000 (Thu, 15 Jun 2017) $
-# $Revision: 247 $
-# $Author: root $
-# $Id: aixinfo 247 2017-06-15 14:43:35Z root $
+#   Copyright 2012-2022 -- Michael Felt, AIXTools
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
+#   http://www.apache.org/licenses/LICENSE-2.0
 #
 #   Unless required by applicable law or agreed to in writing, software
 #   distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,24 +12,6 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-# LPP is short for Licensed PROGRAM PRODUCT
-# The PROGRAM is 'buildaix' by default. Set an environment variable before calling buildaix
-# if you want it to be something else
-# By default the FILESET is taken from the current directory (fileset)
-# and PRODUCT is the sub-directory (product)
-# when fileset and product are equal product becomes ../..
-# For /data/prj/gnu/gcc/gcc-4.7.4 - the PRODUCT will be gnu
-# OR - define PRODUCT via an environment variable
-
-# vrm is the first three digits AA.BB.CCCC following the last - (dash)
-# fix is 0 by default. if the directory-name is fileset-A.B.C.DDDD then fix=DDDD
-# missing numbers are 0, except V - which is 1 by default (so 1.0.0.0 if no numbers)
-#
-# Besides the filename that gets created, as well as the internal labeling
-# these valuse are used to create a package tree is /var/buildaix
-# make is called with DESTDIR to be /var/buildaix/${PROGRAM}/${PRODUCT}/${FILESET}/${VRMF}
-
-# echo results - yes/no ??
 verbose=0
 [[ $1 == "-verbose" ]] && verbose=1
 [[ $1 == "--verbose" ]] && verbose=2 && set -x
@@ -43,62 +20,66 @@ reexec=$2
 
 [[ -x buildaix/bin/aixinfo  && ! -z ${reexec} ]] && exec buildaix/bin/aixinfo $1 1
 
-# the assumption is that projects are organized as:
-# /some/where/package/fileset/fileset-v.r.m.f
-# or as
-# /some/where/package/fileset-v.r.m.f
-set `pwd`
-basedir=$1
+basedir=$(pwd)
 SUBDIR=${basedir%/*}
 DIRNAME=${basedir##*/}
 
-# If the direct sub-directory is "static" then take product from one-level deeper
-# and set PROGRAM to "static"
+# If the direct sub-directory is "static" then overwrite PROGRAM to 'static'
+# the intent is that the package contains static libraries only
+# e.g., /data/prj/gnu/static/gettext-X.Y.Z becomes:
+# static.gnu.gettext.X.Y.Z.0.I
+
 product=${SUBDIR##*/}
 if [[ ${product} == "static" ]]; then
-  export PROGRAM="static"
-  SUBDIR="${SUBDIR%/*}"
-  product=${SUBDIR##*/}
+    export PROGRAM="static"
+    SUBDIR="${SUBDIR%/*}"
+    product=${SUBDIR##*/}
 fi
 
+# fileset is the dirname upto the last '-' character
 fileset=${DIRNAME%%-[0-9]*}
 
+# version1 is text after stripping ${fileset}
+# version is version1 less the leading '-' character
 version1=${DIRNAME#${fileset}}
 version=${version1#-}
+
+# some versioning systems use 'b' for beta, 'p' for portable
+# extract that 'label'
 echo ${version} | awk -Fp ' { print $1, $2 } ' | read version portable
 echo ${version} | awk -Fb ' { print $1, $2 } ' | read version beta
 
 ## my projects directory is /data/prj - I do not want prj as PRODUCT
 if [[ ${product} == ${fileset} ]] ; then
-	SUBDIR=${SUBDIR%/*}
-        if [[ ${SUBDIR##*/} != "prj" ]]; then
-		product=${SUBDIR##*/}
-	fi
+    SUBDIR=${SUBDIR%/*}
+                if [[ ${SUBDIR##*/} != "prj" ]]; then
+        product=${SUBDIR##*/}
+    fi
 fi
 
 fix=0
-# look for p in name - openssh is the first case.
+# look for p in name - openssh/openssl are most common examples
 # There are more variations to be picked up in the future.
 if [[ ! -z ${portable} ]]; then
-	p=1600
-	let fix=${p}+${portable}
+    p=1600
+    let fix=${p}+${portable}
 elif [[ ! -z ${beta} ]]; then
-	p=200
-	let fix=${p}+${beta}
+    p=200
+    let fix=${p}+${beta}
 fi
 
 cnt=`echo ${version} | awk -F. ' { print NF } '`
 
 case "$cnt" in
-	0) vrm=1.0.0 ;;
-	1) vrm=$version.0.0 ;;
-	2) vrm=$version.0 ;;
-	3) vrm=$version ;;
-	4) fix=`echo ${version} | cut -d. -s -f4`
-	   vrm=`echo ${version} | cut -d. -s -f1-3`
-	   ;;
-	*) echo VERSION parsing error ::$version:: - edit aixinfo
-	   exit -1
+    0) vrm=1.0.0 ;;
+    1) vrm=$version.0.0 ;;
+    2) vrm=$version.0 ;;
+    3) vrm=$version ;;
+    4) fix=`echo ${version} | cut -d. -s -f4`
+         vrm=`echo ${version} | cut -d. -s -f1-3`
+         ;;
+    *) echo VERSION parsing error ::$version:: - edit aixinfo
+         exit -1
 esac
 
 PROGRAM=${PROGRAM-"buildaix"}
@@ -108,7 +89,7 @@ VRMF=${VRMF-${vrm}.${fix}}
 
 if [[ ${verbose} -ne 0 ]]
 then 
-	print aixinfo FILESET: ${FILESET}
-	print aixinfo computed: Version.Release.Maintenance.Fix ${vrm}.${fix}
-	print aixinfo LPP NAME: ${PROGRAM}.${PRODUCT}.${FILESET}.${VRMF}
+    print aixinfo FILESET: ${FILESET}
+    print aixinfo computed: Version.Release.Maintenance.Fix ${vrm}.${fix}
+    print aixinfo LPP NAME: ${PROGRAM}.${PRODUCT}.${FILESET}.${VRMF}
 fi
