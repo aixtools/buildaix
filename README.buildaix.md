@@ -1,4 +1,5 @@
-
+## Comments transported from the scripts
+## AIXINFO
 # LPP is short for Licensed PROGRAM PRODUCT
 # AIXINFO provides the 4 environment variables needed to label a package:
 # PROGRAM.PRODUCT.FILESET.VRMF
@@ -42,4 +43,42 @@
 
 # If the direct sub-directory is "static" then take product from one-level deeper
 # and set PROGRAM to "static"
+
+## MKINSTALLP.KSH
+# mkinstallp processing
+#lpp_extra_cfg - process optional config files that makebff.pl can also process
+# skipping the one mkinstallp is already processing!
+# # as mkinstallp also clears .info we cannot copy directly to $CONFIGDIR
+# # if we have any files - they are copied after the dummy makebff.pl is called
+# my @configFiles=(
+#   "al","cfginfo","cfgfiles","config","config_u","copyright","err","fixdata",
+#   "inventory","namelist","odmadd","odmdel","post_i","post_u","pre_d","pre_i",
+#   "pre_rm","pre_u","productid","README","rm_inv","size","trc","unconfig","unconfig_u",
+#   "unodmadd","unpost_i","unpost_u","unpre_i","unpre_u"
+# );
+#
+# cfginfo: special instructions - only one - BOOT - not used
+# cfgfiles: user-configureable files
+# copyright: copyright message
+# err: template file used as input to errupdate
+# fixdata: info about the update - not used atm
+# imventory: contains required software vital product data for the files in fileset
+# namelist: obsolete filesets - not used
+# odmadd: stanzas to be added to ODM
+# rm_inv: remove inventory - This file is for installation of repackaged software products only
+# size: space requirements - managed by mkinstallp
+# README: aka lpp.README
+# productid: Product Identification file # not used
+#
+# Optional 'executitional'
+# config, config_u: by template
+# odmdel: update ODM before adding new ODM entries
+# pre_d: by template
+# pre_i, pre_u: by template
+# pre_rej: by template
+# pre_rm: by template
+# post_i, post_u: by template
+# unconfig, unconfig_u: by template
+# unpre_i, unpre_u: by template
+# unconfig_d: by template (if exists, overrides unconfig, unconfig_i and unpre_i)
 

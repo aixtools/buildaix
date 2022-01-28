@@ -86,7 +86,7 @@ function set_ugid_access
 	find ${INST_FILES} -type d -exec chmod og+x {} \;
 	# make sure etc, dev and opt are uid.gid root.system - if they exist -
 	for dir in etc opt dev; do
-	  [[ -d ${INST_FILES}/${dir} ]] && chown root.system ${INST_FILES}/${dir}
+        [[ -d ${INST_FILES}/${dir} ]] && chown root.system ${INST_FILES}/${dir}
 	done
 	cd ${_pwd}
 }
@@ -371,41 +371,6 @@ function lpp_extra_files
 	done
 }
 
-#lpp_extra_cfg - process optional config files that makebff.pl can also process
-# skipping the one mkinstallp is already processing!
-# # as mkinstallp also clears .info we cannot copy directly to $CONFIGDIR
-# # if we have any files - they are copied after the dummy makebff.pl is called
-# my @configFiles=(
-#   "al","cfginfo","cfgfiles","config","config_u","copyright","err","fixdata",
-#   "inventory","namelist","odmadd","odmdel","post_i","post_u","pre_d","pre_i",
-#   "pre_rm","pre_u","productid","README","rm_inv","size","trc","unconfig","unconfig_u",
-#   "unodmadd","unpost_i","unpost_u","unpre_i","unpre_u"
-# );
-# 
-# cfginfo: special instructions - only one - BOOT - not used
-# cfgfiles: user-configureable files
-# copyright: copyright message
-# err: template file used as input to errupdate
-# fixdata: info about the update - not used atm
-# imventory: contains required software vital product data for the files in fileset
-# namelist: obsolete filesets - not used
-# odmadd: stanzas to be added to ODM
-# rm_inv: remove inventory - This file is for installation of repackaged software products only
-# size: space requirements - managed by mkinstallp
-# README: aka lpp.README
-# productid: Product Identification file # not used
-# 
-# Optional 'executitional'
-# config, config_u: by template
-# odmdel: update ODM before adding new ODM entries
-# pre_d: by template
-# pre_i, pre_u: by template
-# pre_rej: by template
-# pre_rm: by template
-# post_i, post_u: by template
-# unconfig, unconfig_u: by template
-# unpre_i, unpre_u: by template
-# unconfig_d: by template (if exists, overrides unconfig, unconfig_i and unpre_i)
 function lpp_extra_cfg
 {
   typeset infile base cfg action _dir _cfgdir _ext
@@ -477,6 +442,7 @@ function lpp_file
 	print "  ${keyword}: ${file}" >>${template}
 }
 
+# Why set a=1 ?
 function mk_fileset
 {
 #          "Fileset Name"
@@ -505,6 +471,7 @@ function mk_fileset
 	a=1
 }
 
+# Migrate these notes elsewhere
 # Note 7: The override inventory file needs to have the same structure as a normal
 #       inventory file.  The path of this file (if it exists) needs to be specified in the
 #       OVERRIDE_INVENTORY line in the template as shown in example 6 (/tmp/inv1).
@@ -546,9 +513,8 @@ function mk_fileset
 #         size =
 #         checksum =
 
-
-	# do LIBLPP processing here
-	# this will - later include both start text USRLIBLPPFiles as finish EOUSRLPBLPPFiles
+# do LIBLPP processing here
+# this will - later include both start text USRLIBLPPFiles as finish EOUSRLPBLPPFiles
 #       case $FILE_KEYWORD in
 #             "Pre_rm Script"        )      PRERM_PATH=${REST_FILE_LINE#[ ]*}    ;;
 #             "Pre-installation Script" )   PRE_PATH=${REST_FILE_LINE#[ ]*}      ;;
@@ -559,6 +525,7 @@ function mk_fileset
 #             "Configuration Script")       CONFIG_PATH=${REST_FILE_LINE#[ ]*}   ;;
 #             "Unconfiguration Script")     UNCONFIG_PATH=${REST_FILE_LINE#[ ]*} ;;
 #       esac
+
 function rootlpp_files
 {
 typeset ext=$1
@@ -818,7 +785,7 @@ EOF
 	print "  EOUSRFiles" >> $template
 
         
-        ## Add the remaining files - etc and var
+    ## Add the remaining files - etc and var
 
 	## do ROOT part if there are any files in /etc or /var
 	## also requires copying the structure of the LPPBASE (aka DESTBUILD)

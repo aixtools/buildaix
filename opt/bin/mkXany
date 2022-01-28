@@ -10,11 +10,11 @@ prefix=$1
 [[ -z ${prefix} ]] && prefix="/opt"
 
 for DIR in X32 X64; do
-  cd ${DIR}
-  rm -rf usr opt
-  print restore ${DIR}/*.I
-  restore -xqf *.I >/dev/null
-  cd ..
+    cd ${DIR}
+    rm -rf usr opt
+    print restore ${DIR}/*.I
+    restore -xqf *.I >/dev/null
+    cd ..
 done
 
 # basis is to copy X64 and then copy 32-bit archive members
@@ -34,6 +34,6 @@ done
 # just to make sure all .a files have been processed
 #
 print
-print "all archives are:"
+print "Verify all archives have been updated:"
 print date: `/usr/bin/date`
-find Xany -mtime 1 -name \*.a -ls | /usr/bin/sort +11
+find ./Xany -mtime 1 -name \*.a -ls | /usr/bin/sort +11
