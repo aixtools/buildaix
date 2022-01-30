@@ -1,10 +1,6 @@
-#!/usr/bin/ksh
-#   Copyright 2012 -- Michael Felt
+#!/usr/bin/ksh -e
+#   Copyright 2012-2022 -- Michael Felt
 #
-# $Revision:: 263                          $:  Revision of last commit
-# $Author:: root                           $:  Author of last commit
-# $Date:: 2017-10-03 18:09:28 +0000 (Tue, #$:  Date of last commit
-# 
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
@@ -106,7 +102,7 @@ rm -rf .buildaix
 mkdir -p .buildaix
 
 mkdir -p ${TEMPDIR}/opt/bin
-for file in buildaix.ksh aixinfo mkinstallp.ksh mkXany mkX32 mkX64 cplib.ksh ; do
+for file in buildaix.ksh aixinfo mkinstallp.ksh mkXany mkX32 mkX64 mergelibs.ksh ; do
 	cp -p opt/bin/$file ${TEMPDIR}/opt/bin
 done
 
