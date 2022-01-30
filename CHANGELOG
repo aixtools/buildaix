@@ -1,3 +1,10 @@
+buildaix 2.1.5.0:  Sun Jan 30 16:55:41 UTC 2022
+- merge all libraries (mkXany)
+- retab on many of the sources for better standardization
+- verify that packaging does not modify uid.gid of system directories
+- Ensure /etc, /opt and /dev are uid.gid root.system when they are part
+    part of the package contents.
+
 buildaix 2.1.4.0:  Sun Nov 1 15:59:33 2020 +0100
 commit 2318f13d58843b8e03b7735f41895be2cff72421 (tag: v2.1.4.0)
 Merge: 0db8b6f f081b7c
