@@ -32,16 +32,15 @@ function do_flags
             && cflags="${cflags} -qmaxmem=-1 -qarch=pwr5" \
             && [[ ${OBJECT_MODE} == "64" ]] && cflags="${cflags} -q64"
 
-    # rpm.rte provides 3 core libraries - but dated
+    # rpm.rte provides 3 core libraries - but dated, without include files
+    # rpm.rte does not provide libz.h, zconf.h or bzlib.h
 #
 #   /usr/opt/freeware/lib/libz.a -v1.2.3
 #   /usr/opt/freeware/lib/libintl.a -v-0.0.0
 #   /usr/opt/freeware/lib/libbz2.a -v1.0.5
 #
-    # rpm.rte does not provide libz.h, zconf.h or bzlib.h
     # For here - if we cannot find zlib.h in standard locations
     # add our include directory to satisfy most requirements
-    # if cannot find zlib.h then look at copy provided by buildaix
     ## starting with buildaix-2.0.17 there are copies of these files
     ## placed in /usr/include - to pacify most GNU expectations
     ## and make the resulting CFLAGS more "fitting" for followup
@@ -52,8 +51,6 @@ function do_flags
         [[ ! -e /usr/include/${file} && \
             ! -e /usr/local/include/${file} && \
             ! -e /opt/freeware/include/${file} ]] && \
-            [[ ! -e ${prefix}/include/${file} ]] && \
-            [[ ! -e ${eprefix}/include/${file} ]] && \
             cppflags=1
     done
 
@@ -61,11 +58,12 @@ function do_flags
     CFLAGS="-I${prefix}/include ${cflags}"
     # add $eprefix/include if different from $prefix
     [[ ${eprefix} != ${prefix} ]] && CFLAGS="-I${eprefix}/include $CFLAGS"
+    # add /opt/buildaix/include if the rpm.rte files have not already been spotted
     [[ $cppflags -ne 0 ]] && CFLAGS="$CFLAGS -I/opt/buildaix/includes"
     export CFLAGS
 
     # some configure (buildconf results) do not find /opt/include
-    # actually the buildconf familt of tools assume /usr and /usr/local and 
+    # actually the buildconf family of tools assume /usr and /usr/local and 
     # frequently skip the --prefix argument
     # adding /opt/include to CPPFLAGS solves most of these (maybe all)
 
