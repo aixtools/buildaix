@@ -1,4 +1,5 @@
 #!/usr/bin/ksh
+# remove these files if not (later) included in a different package
 for file in bzlib.h zconf.h zlib.h; do
 lslpp -w /usr/include/$file > /dev/null
 [[ ! -z $? ]] && rm -f /usr/include/$file
